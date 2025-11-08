@@ -13,11 +13,11 @@ import {
   Dimensions,
   Alert,
   Animated,
-  PanResponder
+  ScrollView,
+  PanResponder,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Font from 'expo-font';
-
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const MOBILE_WIDTH = 375; // iPhone standard width
 const MOBILE_HEIGHT = 812; // iPhone standard height (9:16 ratio)
@@ -114,7 +114,6 @@ const HOME_BG = require('./assets/home_background.png');
 const BIRD_COLLECTION = require('./assets/bird_collection.png');
 const QUESTS_IMG = require('./assets/quests.png');
 const WORM = require('./assets/worm.png');
-
 // Bird chat icons and names
 const BIRD_CHAT_DATA = {
   pelican: { icon: require('./assets/pelican_icon.png'), name: 'LILIAN' },
@@ -188,12 +187,13 @@ export default function App() {
   const level1Opacity = useRef(new Animated.Value(1)).current;
   const level2Opacity = useRef(new Animated.Value(0)).current;
   // Sponge drag state
-  const [spongePosition, setSpongePosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [isWashing, setIsWashing] = useState(false);
   const [washTime, setWashTime] = useState(0);
   const [bubbleEmojis, setBubbleEmojis] = useState([]);
   const bubbleEmojiIdCounter = useRef(0);
+  const spongePan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+  const spongeGlobalPosition = useRef({ x: 0, y: 0 });
 
   // AR mode camera setup
   useEffect(() => {
@@ -346,6 +346,7 @@ export default function App() {
         const { userName: savedName, rememberMe: savedRemember } = JSON.parse(savedLogin);
         if (savedRemember) {
           setUserName(savedName);
+          setRememberMe(true);
           // If quiz is completed, go to home instead of quiz
           if (savedQuizDone === 'true') {
             // Load selected bird from storage
@@ -358,7 +359,11 @@ export default function App() {
           } else {
             setAppState(APP_STATES.QUIZ);
           }
+        } else {
+          setAppState(APP_STATES.LOGIN);
         }
+      } else {
+        setAppState(APP_STATES.LOGIN);
       }
     } catch (error) {
       console.log('Error checking saved login:', error);
@@ -537,9 +542,8 @@ export default function App() {
       <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.85 }}>
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
-          <View style={styles.header}>
-            <Text style={styles.welcomeText}>Welcome, {userName}!</Text>
-            <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+          <View style={[styles.header, styles.resultsHeader]}>
+            <TouchableOpacity onPress={handleLogout} style={[styles.logoutButton, styles.logoutButtonResults]}>
               <Text style={styles.logoutText}>Logout</Text>
             </TouchableOpacity>
           </View>
@@ -547,9 +551,9 @@ export default function App() {
           <View style={styles.resultContent}>
             <Text style={styles.resultTitle}>YOU ARE A...</Text>
             <Text style={styles.birdTypeTitle}>{result[0].name.toUpperCase()}!</Text>
-            <Image source={result[0].img} style={styles.largeBirdImg} resizeMode="cover" />
+            <Image source={result[0].img} style={[styles.largeBirdImg, styles.resultIdCard]} resizeMode="cover" />
             <Text style={styles.blurb}>{result[0].blurb}</Text>
-            <TouchableOpacity style={styles.primary} onPress={async () => {
+            <TouchableOpacity style={[styles.primary, styles.resultsBeginButton]} onPress={async () => {
               setSelectedBird(result[0]);
               setShowIdCard(true);
               // Save quiz completion and selected bird
@@ -651,7 +655,7 @@ export default function App() {
         <ImageBackground source={currentBg} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.7 }}>
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
-            <View style={styles.tramContent}>
+            <ScrollView contentContainerStyle={styles.tramContent} showsVerticalScrollIndicator={false}>
               <View style={{ marginTop: 60 }}>
                 <Text style={styles.locationHeaderTop}>YOU ARE AT</Text>
                 <Text style={styles.locationHeaderSub}>25E: Jubilee Street</Text>
@@ -674,15 +678,15 @@ export default function App() {
                   <View style={styles.tramOptions}>
                     {isFirstQuestion ? (
                       <>
-                        <TouchableOpacity style={styles.option} onPress={() => { 
+                        <TouchableOpacity style={[styles.option, styles.tramOption]} onPress={() => { 
                           setTramCorrect(false); 
                           setTramStage('result');
                           wrongAnswerOpacity.setValue(0);
                           Animated.timing(wrongAnswerOpacity, { toValue: 1, duration: 600, useNativeDriver: true }).start();
                         }}>
-                          <Text style={styles.optionText}>A) Planting native trees</Text>
+                          <Text style={[styles.optionText, styles.tramOptionText]}>A) Planting native trees</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.option} onPress={() => {
+                        <TouchableOpacity style={[styles.option, styles.tramOption]} onPress={() => {
                           setTramCorrect(true);
                           setTramStage('result');
                           // start heal animation
@@ -698,36 +702,36 @@ export default function App() {
                           popupOpacity.setValue(0);
                           Animated.timing(popupOpacity, { toValue: 1, duration: 400, useNativeDriver: true }).start();
                         }}>
-                          <Text style={styles.optionText}>B) Feeding bread to pond ducks</Text>
+                          <Text style={[styles.optionText, styles.tramOptionText]}>B) Feeding bread to pond ducks</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.option} onPress={() => { 
+                        <TouchableOpacity style={[styles.option, styles.tramOption]} onPress={() => { 
                           setTramCorrect(false); 
                           setTramStage('result');
                           wrongAnswerOpacity.setValue(0);
                           Animated.timing(wrongAnswerOpacity, { toValue: 1, duration: 600, useNativeDriver: true }).start();
                         }}>
-                          <Text style={styles.optionText}>C) Keeping pet cats indoors</Text>
+                          <Text style={[styles.optionText, styles.tramOptionText]}>C) Keeping pet cats indoors</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.option} onPress={() => { 
+                        <TouchableOpacity style={[styles.option, styles.tramOption]} onPress={() => { 
                           setTramCorrect(false); 
                           setTramStage('result');
                           wrongAnswerOpacity.setValue(0);
                           Animated.timing(wrongAnswerOpacity, { toValue: 1, duration: 600, useNativeDriver: true }).start();
                         }}>
-                          <Text style={styles.optionText}>D) Installing backyard birdhouses</Text>
+                          <Text style={[styles.optionText, styles.tramOptionText]}>D) Installing backyard birdhouses</Text>
                         </TouchableOpacity>
                       </>
                     ) : (
                       <>
-                        <TouchableOpacity style={styles.option} onPress={() => { 
+                        <TouchableOpacity style={[styles.option, styles.tramOption]} onPress={() => { 
                           setTramCorrect(false); 
                           setTramStage('result');
                           wrongAnswerOpacity.setValue(0);
                           Animated.timing(wrongAnswerOpacity, { toValue: 1, duration: 600, useNativeDriver: true }).start();
                         }}>
-                          <Text style={styles.optionText}>A) Overpopulation of birds</Text>
+                          <Text style={[styles.optionText, styles.tramOptionText]}>A) Overpopulation of birds</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.option} onPress={() => {
+                        <TouchableOpacity style={[styles.option, styles.tramOption]} onPress={() => {
                           setTramCorrect(true);
                           setTramStage('result');
                           // start heal animation
@@ -743,23 +747,23 @@ export default function App() {
                           popupOpacity.setValue(0);
                           Animated.timing(popupOpacity, { toValue: 1, duration: 400, useNativeDriver: true }).start();
                         }}>
-                          <Text style={styles.optionText}>B) Habitat loss due to urban development</Text>
+                          <Text style={[styles.optionText, styles.tramOptionText]}>B) Habitat loss due to urban development</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.option} onPress={() => { 
+                        <TouchableOpacity style={[styles.option, styles.tramOption]} onPress={() => { 
                           setTramCorrect(false); 
                           setTramStage('result');
                           wrongAnswerOpacity.setValue(0);
                           Animated.timing(wrongAnswerOpacity, { toValue: 1, duration: 600, useNativeDriver: true }).start();
                         }}>
-                          <Text style={styles.optionText}>C) Too many bird feeders</Text>
+                          <Text style={[styles.optionText, styles.tramOptionText]}>C) Too many bird feeders</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.option} onPress={() => { 
+                        <TouchableOpacity style={[styles.option, styles.tramOption]} onPress={() => { 
                           setTramCorrect(false); 
                           setTramStage('result');
                           wrongAnswerOpacity.setValue(0);
                           Animated.timing(wrongAnswerOpacity, { toValue: 1, duration: 600, useNativeDriver: true }).start();
                         }}>
-                          <Text style={styles.optionText}>D) Birds migrating too early</Text>
+                          <Text style={[styles.optionText, styles.tramOptionText]}>D) Birds migrating too early</Text>
                         </TouchableOpacity>
                       </>
                     )}
@@ -780,7 +784,7 @@ export default function App() {
                   </View>
                   <View style={styles.resultOverlay}> 
                     {tramCorrect ? (
-                      <Text style={styles.tramResultText}>You chose B, which is correct! You have saved the hurt Tringa Guttifer. The Tringa Guttifer is a rare but regular spring passage migrant in Hong Kong, which unfortunately hurt itself in Julibee Street. Thanks to your help, it is now healed and added to yoru collection!</Text>
+                      <Text style={styles.tramResultText}>You chose B, which is correct! You have saved the hurt Tringa Guttifer. The Tringa Guttifer is a rare but regular spring passage migrant in Hong Kong, which unfortunately hurt itself in Julibee Street. Thanks to your help, it is now healed and added to your collection!</Text>
                     ) : (
                       <Text style={styles.tramResultText}>
                         {isFirstQuestion 
@@ -808,7 +812,7 @@ export default function App() {
                   </Animated.View>
                 </View>
               )}
-            </View>
+            </ScrollView>
           </SafeAreaView>
         </ImageBackground>
       </View>
@@ -839,7 +843,7 @@ export default function App() {
             }} style={styles.homeLogoutButton}>
               <Text style={styles.logoutText}>Logout</Text>
             </TouchableOpacity>
-            <View style={{ marginTop: 130 }}>
+            <View style={{ marginTop: 120 }}>
               <Text style={styles.locationHeaderTop}>WELCOME TO</Text>
               <Text style={styles.locationHeaderSub}>Perchliner</Text>
             </View>
@@ -943,12 +947,12 @@ export default function App() {
             <TouchableOpacity style={styles.homeIcon} onPress={() => setAppState('home')}>
               <Text style={styles.homeIconText}>⌂</Text>
             </TouchableOpacity>
-            <View style={{ marginTop: 130 }}>
+            <View style={{ marginTop: 120 }}>
               <Text style={styles.locationHeaderTop}>QUESTS</Text>
               <Text style={styles.locationHeaderSub}>Compete unique quests to gain rewards</Text>
             </View>
             <View style={styles.birdCollectionContainer}>
-              <Image source={QUESTS_IMG} style={styles.birdCollectionImage} resizeMode="cover" />
+              <Image source={QUESTS_IMG} style={styles.birdCollectionImage} resizeMode="contain" />
             </View>
           </View>
         </SafeAreaView>
@@ -965,12 +969,12 @@ export default function App() {
             <TouchableOpacity style={styles.homeIcon} onPress={() => setAppState('home')}>
               <Text style={styles.homeIconText}>⌂</Text>
             </TouchableOpacity>
-            <View style={{ marginTop: 130 }}>
+            <View style={{ marginTop: 120 }}>
               <Text style={styles.locationHeaderTop}>BIRDS COLLECTION</Text>
               <Text style={styles.locationHeaderSub}>Your flock of birds</Text>
             </View>
             <View style={styles.birdCollectionContainer}>
-              <Image source={BIRD_COLLECTION} style={styles.birdCollectionImage} resizeMode="cover" />
+              <Image source={BIRD_COLLECTION} style={styles.birdCollectionImage} resizeMode="contain" />
             </View>
           </View>
         </SafeAreaView>
@@ -1235,26 +1239,29 @@ export default function App() {
       onPanResponderGrant: (evt) => {
         setIsDragging(true);
         const { pageX, pageY } = evt.nativeEvent;
-        setSpongePosition({ x: pageX, y: pageY });
+        spongeGlobalPosition.current = { x: pageX, y: pageY };
+        spongePan.stopAnimation(value => {
+          spongePan.setOffset({ x: value.x, y: value.y });
+          spongePan.setValue({ x: 0, y: 0 });
+        });
       },
-      onPanResponderMove: (evt) => {
+      onPanResponderMove: (evt, gestureState) => {
+        Animated.event([null, { dx: spongePan.x, dy: spongePan.y }], { useNativeDriver: false })(evt, gestureState);
         const { pageX, pageY } = evt.nativeEvent;
-        setSpongePosition({ x: pageX, y: pageY });
-        
+        spongeGlobalPosition.current = { x: pageX, y: pageY };
+
         // Check if over bird and create bubbles
-        // Bird center is roughly at screen center, adjust based on actual layout
         const birdCenterX = MOBILE_WIDTH / 2;
         const birdCenterY = MOBILE_HEIGHT * 0.45;
         const distance = Math.sqrt(
           Math.pow(pageX - birdCenterX, 2) + Math.pow(pageY - birdCenterY, 2)
         );
-        
+
         if (distance < MOBILE_WIDTH * 0.25) {
           if (!isWashing) {
             setIsWashing(true);
             setWashTime(0);
           }
-          // Create bubble emojis periodically
           if (Math.random() < 0.3) {
             createBubbleEmoji(pageX, pageY);
           }
@@ -1263,6 +1270,12 @@ export default function App() {
       onPanResponderRelease: () => {
         setIsDragging(false);
         setIsWashing(false);
+        spongePan.flattenOffset();
+      },
+      onPanResponderTerminate: () => {
+        setIsDragging(false);
+        setIsWashing(false);
+        spongePan.flattenOffset();
       },
     })
   ).current;
@@ -1298,7 +1311,7 @@ export default function App() {
             <TouchableOpacity style={styles.homeIcon} onPress={() => setAppState('home')}>
               <Text style={styles.homeIconText}>⌂</Text>
             </TouchableOpacity>
-            <View style={{ marginTop: 130 }}>
+            <View style={{ marginTop: 120 }}>
               <Text style={styles.locationHeaderTop}>TRINGA'S HOME</Text>
               <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center', height: 40 }}>
                 <Animated.Text style={[styles.locationHeaderSub, { opacity: level1Opacity, position: 'absolute' }]}>Level 1</Animated.Text>
@@ -1306,56 +1319,58 @@ export default function App() {
               </View>
             </View>
             <View style={[styles.tringaImageContainer, { marginTop: -25 }]}>
-              <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
-                <TouchableOpacity activeOpacity={1} onPress={handleTringaTap}>
-                  <Image 
-                    source={HEALED_TRINGA} 
-                    style={styles.tringaImage} 
-                    resizeMode="contain"
-                  />
-                </TouchableOpacity>
-                {/* Animated emojis */}
-                {tringaEmojis.map(emoji => (
-                  <Animated.View
-                    key={emoji.id}
-                    style={[
-                      styles.tringaEmoji,
-                      {
-                        opacity: emoji.opacity,
-                        transform: [
-                          { scale: emoji.scale },
-                          { translateY: emoji.translateY },
-                        ],
-                      },
-                    ]}
-                  >
-                    <Text style={styles.tringaEmojiText}>{emoji.emoji}</Text>
-                  </Animated.View>
-                ))}
-                {/* Bubble emojis from washing */}
-                {bubbleEmojis.map(emoji => (
-                  <Animated.View
-                    key={emoji.id}
-                    style={[
-                      styles.tringaEmoji,
-                      {
-                        position: 'absolute',
-                        left: emoji.x - 24,
-                        top: emoji.y - 24,
-                        opacity: emoji.opacity,
-                        transform: [
-                          { scale: emoji.scale },
-                          { translateY: emoji.translateY },
-                          { translateX: emoji.translateX },
-                        ],
-                      },
-                    ]}
-                  >
-                    <Text style={styles.tringaEmojiText}>{emoji.emoji}</Text>
-                  </Animated.View>
-                ))}
-              </View>
-            </View>
+              <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }} pointerEvents="box-none">
+                 <TouchableOpacity activeOpacity={1} onPress={handleTringaTap}>
+                   <Image 
+                     source={HEALED_TRINGA} 
+                     style={styles.tringaImage} 
+                     resizeMode="contain"
+                   />
+                 </TouchableOpacity>
+                 {/* Animated emojis */}
+                 {tringaEmojis.map(emoji => (
+                   <Animated.View
+                     key={emoji.id}
+                     style={[
+                       styles.tringaEmoji,
+                       {
+                         opacity: emoji.opacity,
+                         transform: [
+                           { scale: emoji.scale },
+                           { translateY: emoji.translateY },
+                         ],
+                       },
+                     ]}
+                     pointerEvents="none"
+                   >
+                     <Text style={styles.tringaEmojiText}>{emoji.emoji}</Text>
+                   </Animated.View>
+                 ))}
+                 {/* Bubble emojis from washing */}
+                 {bubbleEmojis.map(emoji => (
+                   <Animated.View
+                     key={emoji.id}
+                     style={[
+                       styles.tringaEmoji,
+                       {
+                         position: 'absolute',
+                         left: emoji.x - 24,
+                         top: emoji.y - 24,
+                         opacity: emoji.opacity,
+                         transform: [
+                           { scale: emoji.scale },
+                           { translateY: emoji.translateY },
+                           { translateX: emoji.translateX },
+                         ],
+                       },
+                     ]}
+                     pointerEvents="none"
+                   >
+                     <Text style={styles.tringaEmojiText}>{emoji.emoji}</Text>
+                   </Animated.View>
+                 ))}
+               </View>
+             </View>
             <View style={[styles.tringaBottomNav, tringaNavExpanded && styles.tringaBottomNavExpanded]}>
               <TouchableOpacity 
                 style={styles.tringaNavButton} 
@@ -1448,32 +1463,24 @@ export default function App() {
                 )}
                 {tringaNavMode === 'tasks' && (
                   <View style={styles.tasksContent}>
-                    {!isDragging && (
-                      <View
-                        {...spongePanResponder.panHandlers}
-                        style={styles.spongeItem}
-                      >
-                        <Text style={styles.spongeEmoji}>🧽</Text>
-                        <Text style={styles.wormItemTitle}>Clean bird</Text>
-                      </View>
-                    )}
-                    {isDragging && (
-                      <View
+                    <View style={styles.spongeWrapper} pointerEvents="box-none">
+                      <Animated.View
                         {...spongePanResponder.panHandlers}
                         style={[
-                          styles.spongeItem,
-                          styles.spongeItemDragging,
+                          styles.spongeEmojiWrapper,
+                          isDragging && styles.spongeItemDragging,
                           {
-                            position: 'absolute',
-                            left: spongePosition.x - 30,
-                            top: spongePosition.y - 30,
-                            zIndex: 1000,
+                            transform: [
+                              { translateX: spongePan.x },
+                              { translateY: spongePan.y },
+                            ],
                           }
                         ]}
                       >
                         <Text style={styles.spongeEmoji}>🧽</Text>
-                      </View>
-                    )}
+                      </Animated.View>
+                      <Text style={styles.spongeLabel}>Clean bird</Text>
+                    </View>
                   </View>
                 )}
                 {tringaNavMode === 'stats' && (
@@ -1549,7 +1556,7 @@ export default function App() {
             <TouchableOpacity style={styles.homeIcon} onPress={() => setAppState('home')}>
               <Text style={styles.homeIconText}>⌂</Text>
             </TouchableOpacity>
-            <View style={{ marginTop: 105 }}>
+            <View style={{ marginTop: 95 }}>
               <Text style={styles.locationHeaderTop}>PERCHLINER SHOP</Text>
               <Text style={styles.shopSubheading}>Exchange incentives with points</Text>
             </View>
@@ -1571,7 +1578,7 @@ export default function App() {
               <TouchableOpacity style={styles.homeIcon} onPress={() => setAppState('home')}>
                 <Text style={styles.homeIconText}>⌂</Text>
               </TouchableOpacity>
-              <View style={{ marginTop: 180 }}>
+              <View style={{ marginTop: 130 }}>
                 <Text style={styles.locationHeaderTop}>YOUR PROFILE</Text>
               </View>
               
@@ -1740,6 +1747,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingHorizontal: 10,
   },
+  resultsHeader: {
+    justifyContent: 'flex-end',
+  },
+  logoutButtonResults: {
+    marginTop: 10,
+  },
   welcomeText: {
     fontSize: 16,
     fontWeight: '600',
@@ -1751,12 +1764,6 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     backgroundColor: 'rgba(255,255,255,0.8)',
     borderRadius: 8,
-  },
-  logoutText: {
-    fontSize: 14,
-    color: '#073b4c',
-    fontWeight: '600',
-    fontFamily: 'CodecPro',
   },
   loginCard: {
     backgroundColor: 'rgba(255,255,255,0.95)',
@@ -1809,6 +1816,9 @@ const styles = StyleSheet.create({
     width: 260,
     height: 360,
     borderRadius: 16,
+  },
+  resultIdCard: {
+    marginTop: 50,
   },
   profileCreationContent: {
     flex: 1,
@@ -2059,6 +2069,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 0,
     gap: 20,
+    paddingBottom: 40,
   },
   locationHeaderTop: {
     fontSize: 38,
@@ -2106,8 +2117,20 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   tramOptions: {
-    gap: 4,
+    gap: 2,
     width: '100%',
+  },
+  tramOption: {
+    padding: 0,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    marginVertical: 2,
+    marginHorizontal: 8,
+    minHeight: 28,
+  },
+  tramOptionText: {
+    fontSize: 12,
+    lineHeight: 16,
   },
   healArea: {
     alignSelf: 'center',
@@ -2115,7 +2138,7 @@ const styles = StyleSheet.create({
     height: MOBILE_WIDTH * 0.95,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -56,
+    marginTop: -66,
     marginBottom: 12,
   },
   healImage: {
@@ -2158,9 +2181,12 @@ const styles = StyleSheet.create({
   resultOverlay: {
     backgroundColor: 'rgba(0,0,0,0.3)',
     borderRadius: 12,
-    padding: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     marginHorizontal: 16,
     marginTop: -25,
+    alignSelf: 'center',
+    width: '75%',
   },
   homeIcon: {
     position: 'absolute',
@@ -2309,8 +2335,10 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
-    marginTop: 20,
-    overflow: 'hidden',
+    marginTop: 0,
+    overflow: 'visible',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   birdCollectionImage: {
     width: '100%',
@@ -2492,7 +2520,7 @@ const styles = StyleSheet.create({
   },
   profileIdCardContainer: {
     alignItems: 'center',
-    marginTop: -30,
+    marginTop: -80,
     marginBottom: 24,
   },
   profileIdCard: {
@@ -2503,7 +2531,7 @@ const styles = StyleSheet.create({
   profileStatsContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -90,
+    marginTop: -165,
   },
   profileStats: {
     backgroundColor: 'rgba(0,0,0,0.3)',
@@ -2646,6 +2674,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     position: 'relative',
     padding: 20,
+    minHeight: MOBILE_WIDTH * 0.3,
   },
   statsContent: {
     alignItems: 'center',
@@ -2701,10 +2730,19 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
-  spongeItem: {
+  spongeWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
+    minHeight: MOBILE_WIDTH * 0.3,
+    position: 'relative',
+    paddingVertical: 10,
+  },
+  spongeEmojiWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 14,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    borderRadius: 28,
   },
   spongeItemDragging: {
     opacity: 0.8,
@@ -2712,5 +2750,17 @@ const styles = StyleSheet.create({
   spongeEmoji: {
     fontSize: 48,
     textAlign: 'center',
+  },
+  resultsBeginButton: {
+    marginTop: 5,
+  },
+  spongeLabel: {
+    fontSize: 14,
+    color: 'white',
+    fontFamily: 'CodecPro',
+    marginTop: 12,
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
 });
