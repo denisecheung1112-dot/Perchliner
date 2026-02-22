@@ -429,13 +429,9 @@ export default function App() {
     
     return (
       <View style={styles.mobileContainer}>
-        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.85 }}>
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
-            <View style={styles.header}>
-              <Text style={styles.welcomeText}>Welcome, {userName}!</Text>
-            </View>
-            
             <View style={styles.quizContent}>
               <Text style={styles.title}>What bird are you?</Text>
               <Text style={styles.progress}>{quizIndex + 1} / {QUESTIONS.length}</Text>
@@ -470,7 +466,7 @@ export default function App() {
             <View style={styles.resultContent}>
               <Text style={styles.resultTitle}>YOU ARE A...</Text>
               <Text style={styles.birdTypeTitle}>{result[0].name.toUpperCase()}!</Text>
-              <View style={{ marginTop: -70, alignItems: 'center' }}>
+              <View style={{ marginTop: -55, alignItems: 'center' }}>
                 <Image source={result[0].img} style={[styles.largeBirdImg, styles.resultIdCard]} resizeMode="cover" />
                 <Text style={[styles.blurb, { textAlign: 'center' }]}>{result[0].blurb}</Text>
                 <TouchableOpacity style={[styles.primary, styles.resultsBeginButton]} onPress={async () => {
@@ -512,7 +508,7 @@ export default function App() {
               ) : (
                 <Image source={selectedBird.img} style={styles.idCardImage} resizeMode="contain" />
               )}
-              <View style={{ marginTop: -70, alignItems: 'center' }}>
+              <View style={{ marginTop: -120, alignItems: 'center' }}>
                 <Text style={styles.welcomeUserText}>Welcome to{ '\n' }Perchliner!</Text>
                 <TouchableOpacity style={styles.primary} onPress={() => {
                   // Proceed to loading for tram
@@ -1943,6 +1939,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: 'CodecPro',
     fontWeight: 'bold',
+    lineHeight: 24.1,
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 4,
