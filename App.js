@@ -223,13 +223,24 @@ export default function App() {
     async function startCamera() {
       if (!arActive) return;
       try {
+        // Stop existing stream first
+        if (videoRef.current && videoRef.current.srcObject) {
+          const tracks = videoRef.current.srcObject.getTracks();
+          tracks.forEach(t => t.stop());
+          videoRef.current.srcObject = null;
+        }
+        
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: arFacing } });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          if (videoRef.current.style) {
+            videoRef.current.style.display = 'block';
+            videoRef.current.style.opacity = '1';
+          }
           await videoRef.current.play();
         }
-      } catch {
-        // ignore
+      } catch (err) {
+        console.log('Camera error:', err);
       }
       // schedule birds - max 2 at a time, first within 3 seconds
       const intervals = [2500, 8000, 15000, 22000];
@@ -827,9 +838,24 @@ export default function App() {
           <Text style={styles.homeIconText}>⌂</Text>
         </TouchableOpacity>
         {/* Camera preview */}
-        <video ref={videoRef} playsInline muted autoPlay style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 1, backgroundColor: '#000' }} />
-        {/* Blur overlay when bird is clicked */}
-        {arInfo && <View style={[styles.arBlurOverlay, { zIndex: 50 }]} />}
+        <video 
+          ref={videoRef} 
+          playsInline 
+          muted 
+          autoPlay 
+          style={{ 
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            width: '100%', 
+            height: '100%', 
+            objectFit: 'cover', 
+            zIndex: 1, 
+            backgroundColor: '#000' 
+          }} 
+        />
+        {/* Blur overlay when bird is clicked - only partially transparent */}
+        {arInfo && <View style={[styles.arBlurOverlay, { zIndex: 50 }]} pointerEvents="none" />}
         {/* Instruction banner */}
         <View style={[styles.resultOverlay, { position: 'absolute', bottom: BOTTOM_TEXT_SAFE_ZONE + 60, left: 16, right: 16, zIndex: 100 }]}>
           <Text style={styles.tramResultText}>Click on any bird to learn more about the species and gain rewards!</Text>
@@ -2172,8 +2198,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 4,
   },
   titleGradient: {
-    backgroundColor: '#118ab2',
-    opacity: 0.5,
+    backgroundColor: 'rgba(17, 138, 178, 0.5)',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 30,
@@ -2185,8 +2210,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   promptGradient: {
-    backgroundColor: '#118ab2',
-    opacity: 0.5,
+    backgroundColor: 'rgba(17, 138, 178, 0.5)',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 30,
@@ -2472,14 +2496,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   arSwitch: {
-    position: 'absolute',
-    top: 10,
-    left: 16,
     backgroundColor: 'rgba(0,0,0,0.35)',
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 10,
     zIndex: 1000,
+    alignSelf: 'flex-start',
+    minWidth: 'auto',
   },
   arBird: {
     position: 'absolute',
@@ -2495,7 +2518,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     zIndex: 50,
   },
   homeBtn: {
@@ -2980,22 +3003,24 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 20,
     marginHorizontal: 16,
-    marginBottom: 20,
+    marginBottom: PHONE_HEIGHT * 0.4 + 20,
   },
   questBoxHeader: {
     fontSize: 24,
     fontFamily: 'EtnaSansSerif',
-    color: '#000',
+    color: '#0c3c5b',
     marginBottom: 12,
-    textAlign: 'center',
+    textAlign: 'left',
+    marginLeft: 5,
   },
   questBoxText: {
     fontSize: 16,
     fontFamily: 'CodecPro',
-    color: '#000',
+    color: '#0c3c5b',
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: 'left',
     lineHeight: 22,
+    marginLeft: 5,
   },
   questStartButton: {
     backgroundColor: '#42accd',
@@ -3119,7 +3144,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     width: '100%',
-    height: PHONE_HEIGHT * 0.5,
+    height: PHONE_HEIGHT * 0.4,
     overflow: 'hidden',
     zIndex: 0,
   },
