@@ -429,17 +429,15 @@ export default function App() {
     
     return (
       <View style={styles.mobileContainer}>
-        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.95 }}>
+          <View style={styles.bgBrightnessOverlay} />
+          <View style={styles.bgSaturationOverlay} />
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
             <View style={styles.quizContent}>
-              <View style={styles.titleGradient}>
-                <Text style={styles.title}>WHAT BIRD ARE YOU?</Text>
-              </View>
+              <Text style={styles.title}>WHAT BIRD ARE YOU?</Text>
               <Text style={styles.progress}>{quizIndex + 1} / {QUESTIONS.length}</Text>
-              <View style={styles.promptGradient}>
-                <Text style={styles.prompt}>{QUESTIONS[quizIndex].prompt}</Text>
-              </View>
+              <Text style={styles.prompt}>{QUESTIONS[quizIndex].prompt}</Text>
               <View style={{ height: 18 }} />
               {QUESTIONS[quizIndex].options.map(o => (
                 <TouchableOpacity key={o.key} style={styles.option} onPress={() => onPickAnswer(o.key)}>
@@ -460,7 +458,9 @@ export default function App() {
 
   const renderResultsScreen = () => (
     <View style={styles.mobileContainer}>
-      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
+      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.95 }}>
+        <View style={styles.bgBrightnessOverlay} />
+        <View style={styles.bgSaturationOverlay} />
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
           <ScrollView 
@@ -501,7 +501,9 @@ export default function App() {
     
     return (
       <View style={styles.mobileContainer}>
-        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.95 }}>
+          <View style={styles.bgBrightnessOverlay} />
+          <View style={styles.bgSaturationOverlay} />
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
             <View style={styles.profileCreationContent}>
@@ -551,7 +553,9 @@ export default function App() {
   const renderLoadingTramScreen = () => {
     return (
       <View style={styles.mobileContainer}>
-        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.95 }}>
+          <View style={styles.bgBrightnessOverlay} />
+          <View style={styles.bgSaturationOverlay} />
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
             <View style={styles.loadingContent}>
@@ -846,7 +850,9 @@ export default function App() {
 
   const renderQuestsScreen = () => (
     <View style={styles.mobileContainer}>
-      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
+      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.95 }}>
+        <View style={styles.bgBrightnessOverlay} />
+        <View style={styles.bgSaturationOverlay} />
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
           <View style={{ flex: 1 }}>
@@ -868,7 +874,9 @@ export default function App() {
 
   const renderBirdsCollectionScreen = () => (
     <View style={styles.mobileContainer}>
-      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
+      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.95 }}>
+        <View style={styles.bgBrightnessOverlay} />
+        <View style={styles.bgSaturationOverlay} />
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
           <View style={{ flex: 1 }}>
@@ -1305,17 +1313,6 @@ export default function App() {
               >
                 <Text style={styles.primaryText}>Stats</Text>
               </TouchableOpacity>
-              {tringaNavExpanded && (
-                <TouchableOpacity 
-                  style={styles.tringaNavCloseButton}
-                  onPress={() => {
-                    setTringaNavExpanded(false);
-                    setTringaNavMode(null);
-                  }}
-                >
-                  <Text style={styles.tringaNavCloseText}>✕</Text>
-                </TouchableOpacity>
-              )}
             </View>
             
             {/* Expanded content area */}
@@ -1525,7 +1522,9 @@ export default function App() {
     
     return (
       <View style={styles.mobileContainer}>
-        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.95 }}>
+          <View style={styles.bgBrightnessOverlay} />
+          <View style={styles.bgSaturationOverlay} />
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
             <View style={{ flex: 1 }}>
@@ -1611,7 +1610,7 @@ export default function App() {
     <View style={styles.phoneFrame}>
       {/* Notch */}
       <View style={styles.notch} />
-      {/* Reset button - small circle in top right */}
+      {/* Reset button - small circle in top left */}
       <TouchableOpacity 
         style={styles.resetButton}
         onPress={handleReset}
@@ -1719,6 +1718,26 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.2)',
+  },
+  bgBrightnessOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    zIndex: 1,
+    pointerEvents: 'none',
+  },
+  bgSaturationOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 100, 0, 0.02)',
+    zIndex: 1,
+    pointerEvents: 'none',
   },
   mobileContainer: {
     width: '100%',
@@ -1956,24 +1975,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 4,
-  },
-  titleGradient: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginBottom: 8,
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
-  },
-  promptGradient: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginBottom: 8,
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
   },
   backButton: {
     alignSelf: 'center',
