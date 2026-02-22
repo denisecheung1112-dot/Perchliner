@@ -129,6 +129,7 @@ const APP_STATES = {
   PROFILE_CREATION: 'profile_creation',
   LOADING_TRAM: 'loading_tram',
   TRAM_GAME: 'tram_game',
+  BEGINNER_QUEST: 'beginner_quest',
 };
 
 // Phone frame dimensions - fixed iPhone size
@@ -179,6 +180,19 @@ export default function App() {
   const tringaEmojiIdCounter = useRef(0);
   const [tringaNavExpanded, setTringaNavExpanded] = useState(false);
   const [tringaNavMode, setTringaNavMode] = useState(null); // 'inventory', 'tasks', 'stats'
+  // Beginner quest state
+  const [questTerns, setQuestTerns] = useState([
+    { id: 1, x: 50, y: 200, saved: false, factShown: false },
+    { id: 2, x: 200, y: 350, saved: false, factShown: false },
+    { id: 3, x: 100, y: 500, saved: false, factShown: false },
+  ]);
+  const [selectedTernFact, setSelectedTernFact] = useState(null);
+  const [questFacts] = useState([
+    "Nest site loss, driven primarily by anthropogenic activities like urban expansion, agriculture, and deforestation, is a leading cause of biodiversity decline.",
+    "Nest site loss forces birds into suboptimal habitats, reduces reproductive investment, and causes significant population declines due to reduced breeding success.",
+    "Lowered nesting heights in urban areas or degraded habitats increase vulnerability to predators.",
+  ]);
+  const [questCompleted, setQuestCompleted] = useState(false);
   const [wormPurchased, setWormPurchased] = useState(false);
   const [wormUsesRemaining, setWormUsesRemaining] = useState(0);
   const [showWormPurchasePopup, setShowWormPurchasePopup] = useState(false);
@@ -813,9 +827,9 @@ export default function App() {
           <Text style={styles.homeIconText}>⌂</Text>
         </TouchableOpacity>
         {/* Camera preview */}
-        <video ref={videoRef} playsInline muted autoPlay style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 1 }} />
+        <video ref={videoRef} playsInline muted autoPlay style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 1, backgroundColor: '#000' }} />
         {/* Blur overlay when bird is clicked */}
-        {arInfo && <View style={styles.arBlurOverlay} />}
+        {arInfo && <View style={[styles.arBlurOverlay, { zIndex: 50 }]} />}
         {/* Instruction banner */}
         <View style={[styles.resultOverlay, { position: 'absolute', bottom: BOTTOM_TEXT_SAFE_ZONE + 60, left: 16, right: 16, zIndex: 100 }]}>
           <Text style={styles.tramResultText}>Click on any bird to learn more about the species and gain rewards!</Text>
@@ -830,6 +844,7 @@ export default function App() {
             opacity: b.opacity, 
             left: PHONE_WIDTH * b.x - (PHONE_WIDTH * 0.4) / 2,
             top: PHONE_HEIGHT * b.y - (PHONE_WIDTH * 0.4) / 2,
+            zIndex: 10,
           }]}>
             <TouchableOpacity onPress={() => setArInfo(b)}>
               <Image source={b.img} style={styles.arBirdImg} resizeMode="contain" />
@@ -849,7 +864,7 @@ export default function App() {
 
   const renderQuestsScreen = () => (
     <View style={styles.mobileContainer}>
-        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
+        <ImageBackground source={HOME_BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
           <View style={{ flex: 1 }}>
@@ -860,14 +875,176 @@ export default function App() {
               <Text style={styles.locationHeaderTop}>QUESTS</Text>
               <Text style={styles.locationHeaderSub}>Compete unique quests to gain rewards</Text>
             </View>
-            <View style={styles.birdCollectionContainer}>
-              <Image source={QUESTS_IMG} style={styles.birdCollectionImage} resizeMode="contain" />
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
+              {/* Green leaderboard box */}
+              <View style={styles.questLeaderboardBox}>
+                <Text style={styles.questLeaderboardText}>Quest leaderboard: <Text style={{ fontWeight: 'bold' }}>#28</Text> locally</Text>
+              </View>
+              
+              {/* Pink quest box */}
+              <View style={styles.questBox}>
+                <Text style={styles.questBoxHeader}>Beginner Quest</Text>
+                <Text style={styles.questBoxText}>Terns are trapped in a construction net— enter a mini game to rescue them while learning about nest-site loss!</Text>
+                <TouchableOpacity 
+                  style={styles.questStartButton}
+                  onPress={() => setAppState(APP_STATES.BEGINNER_QUEST)}
+                >
+                  <Text style={styles.questStartButtonText}>START</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+            {/* Quest image at bottom, cropped to show bottom half */}
+            <View style={styles.questImageContainer}>
+              <Image source={QUESTS_IMG} style={styles.questImage} resizeMode="cover" />
             </View>
           </View>
         </SafeAreaView>
       </ImageBackground>
     </View>
   );
+
+  const renderBeginnerQuestScreen = () => {
+    const handleTernClick = (tern) => {
+      if (tern.saved || tern.factShown) return;
+      
+      // Find an unused fact
+      const usedFacts = questTerns.filter(t => t.factShown).map(t => t.factIndex);
+      let factIndex = Math.floor(Math.random() * 3);
+      while (usedFacts.includes(factIndex) && usedFacts.length < 3) {
+        factIndex = Math.floor(Math.random() * 3);
+      }
+      
+      setSelectedTernFact({ ternId: tern.id, factIndex });
+      setQuestTerns(prev => prev.map(t => 
+        t.id === tern.id ? { ...t, factShown: true, factIndex } : t
+      ));
+    };
+
+    const handleGotIt = () => {
+      const tern = questTerns.find(t => t.id === selectedTernFact.ternId);
+      if (tern) {
+        setQuestTerns(prev => {
+          const updated = prev.map(t => 
+            t.id === tern.id ? { ...t, saved: true } : t
+          );
+          // Check if all terns are saved
+          const allSaved = updated.every(t => t.saved);
+          if (allSaved) {
+            setTimeout(() => setQuestCompleted(true), 100);
+          }
+          return updated;
+        });
+        setSelectedTernFact(null);
+      }
+    };
+
+    const savedCount = questTerns.filter(t => t.saved).length;
+
+    return (
+      <View style={styles.mobileContainer}>
+        <ImageBackground source={HOME_BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
+          <SafeAreaView style={styles.safe}>
+            <StatusBar style="dark" />
+            <View style={{ flex: 1 }}>
+              <TouchableOpacity style={styles.homeIcon} onPress={() => {
+                setQuestTerns([
+                  { id: 1, x: 50, y: 200, saved: false, factShown: false },
+                  { id: 2, x: 200, y: 350, saved: false, factShown: false },
+                  { id: 3, x: 100, y: 500, saved: false, factShown: false },
+                ]);
+                setSelectedTernFact(null);
+                setQuestCompleted(false);
+                setAppState('quests');
+              }}>
+                <Text style={styles.homeIconText}>⌂</Text>
+              </TouchableOpacity>
+              <View style={{ marginTop: 70 }}>
+                <Text style={styles.questGameHeader}>BEGINNER QUEST</Text>
+              </View>
+              
+              <View style={styles.questGameContainer}>
+                {/* Construction net pattern - dark green lines */}
+                <View style={styles.constructionNet}>
+                  {[...Array(8)].map((_, i) => (
+                    <View key={`h-${i}`} style={[styles.netLine, styles.netLineHorizontal, { top: `${(i + 1) * 10}%` }]} />
+                  ))}
+                  {[...Array(6)].map((_, i) => (
+                    <View key={`v-${i}`} style={[styles.netLine, styles.netLineVertical, { left: `${(i + 1) * 15}%` }]} />
+                  ))}
+                </View>
+                
+                {/* Saved terns on top of net */}
+                {questTerns.filter(t => t.saved).map(tern => (
+                  <Image
+                    key={`saved-${tern.id}`}
+                    source={require('./assets/bridled_tern.png')}
+                    style={[styles.questTernImage, { left: tern.x, top: tern.y, zIndex: 100 }]}
+                    resizeMode="contain"
+                  />
+                ))}
+                
+                {/* Clickable terns below net */}
+                {questTerns.filter(t => !t.saved).map(tern => (
+                  <TouchableOpacity
+                    key={tern.id}
+                    style={[styles.questTernButton, { left: tern.x, top: tern.y }]}
+                    onPress={() => handleTernClick(tern)}
+                  >
+                    <Image
+                      source={require('./assets/bridled_tern.png')}
+                      style={styles.questTernImage}
+                      resizeMode="contain"
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+              
+              <View style={styles.questInstructionContainer}>
+                <Text style={styles.questInstructionText}>Click on each bridled tern to save them</Text>
+              </View>
+              
+              {/* Fact popup */}
+              {selectedTernFact && (
+                <View style={styles.questFactOverlay}>
+                  <View style={styles.questFactContainer}>
+                    <Text style={styles.questFactText}>
+                      {questFacts[selectedTernFact.factIndex]}
+                    </Text>
+                    <TouchableOpacity style={styles.questGotItButton} onPress={handleGotIt}>
+                      <Text style={styles.questGotItText}>Got it</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+              
+              {/* Completion popup */}
+              {questCompleted && (
+                <View style={styles.questFactOverlay}>
+                  <View style={styles.questFactContainer}>
+                    <Text style={styles.questFactText}>
+                      Congratulations! You saved the terns and completed the quest.
+                    </Text>
+                    <TouchableOpacity style={styles.questGotItButton} onPress={() => {
+                      setQuestCompleted(false);
+                      setQuestTerns([
+                        { id: 1, x: 50, y: 200, saved: false, factShown: false },
+                        { id: 2, x: 200, y: 350, saved: false, factShown: false },
+                        { id: 3, x: 100, y: 500, saved: false, factShown: false },
+                      ]);
+                      setSelectedTernFact(null);
+                      setAppState('quests');
+                    }}>
+                      <Text style={styles.questGotItText}>Got it</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+            </View>
+          </SafeAreaView>
+        </ImageBackground>
+      </View>
+    );
+  };
 
   const renderBirdsCollectionScreen = () => (
     <View style={styles.mobileContainer}>
@@ -1671,6 +1848,7 @@ export default function App() {
         {appState === APP_STATES.PROFILE_CREATION && renderProfileCreationScreen()}
         {appState === APP_STATES.LOADING_TRAM && renderLoadingTramScreen()}
         {appState === APP_STATES.TRAM_GAME && renderTramGameScreen()}
+        {appState === APP_STATES.BEGINNER_QUEST && renderBeginnerQuestScreen()}
         {appState === 'home' && renderHomeScreen()}
         {appState === 'ar_mode' && renderArScreen()}
         {appState === 'quests' && renderQuestsScreen()}
@@ -1995,6 +2173,7 @@ const styles = StyleSheet.create({
   },
   titleGradient: {
     backgroundColor: '#118ab2',
+    opacity: 0.5,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 30,
@@ -2007,6 +2186,7 @@ const styles = StyleSheet.create({
   },
   promptGradient: {
     backgroundColor: '#118ab2',
+    opacity: 0.5,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 30,
@@ -2258,7 +2438,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 2,
   },
   resultOverlay: {
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 12,
@@ -2422,8 +2602,8 @@ const styles = StyleSheet.create({
     maxHeight: PHONE_HEIGHT - NOTCH_HEIGHT - BOTTOM_SAFE_AREA - 200,
   },
   birdCollectionImage: {
-    width: '100%',
-    height: '100%',
+    width: '130%',
+    height: '130%',
   },
   chatIconContainer: {
     alignItems: 'center',
@@ -2780,6 +2960,176 @@ const styles = StyleSheet.create({
   },
   bubbleEmojiText: {
     fontSize: 30,
+  },
+  questLeaderboardBox: {
+    backgroundColor: '#96d8b9',
+    borderRadius: 30,
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 20,
+    marginBottom: 16,
+  },
+  questLeaderboardText: {
+    color: '#0c3c5b',
+    fontSize: 16,
+    fontFamily: 'CodecPro',
+    textAlign: 'center',
+  },
+  questBox: {
+    backgroundColor: '#fae5f1',
+    borderRadius: 30,
+    padding: 20,
+    marginHorizontal: 16,
+    marginBottom: 20,
+  },
+  questBoxHeader: {
+    fontSize: 24,
+    fontFamily: 'EtnaSansSerif',
+    color: '#000',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  questBoxText: {
+    fontSize: 16,
+    fontFamily: 'CodecPro',
+    color: '#000',
+    marginBottom: 20,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  questStartButton: {
+    backgroundColor: '#42accd',
+    borderRadius: 38,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  questStartButtonText: {
+    fontSize: 24,
+    fontFamily: 'EtnaSansSerif',
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  questGameHeader: {
+    fontSize: 32,
+    fontFamily: 'EtnaSansSerif',
+    color: '#fff',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 2, height: 2 },
+    textShadowRadius: 4,
+  },
+  questGameContainer: {
+    flex: 1,
+    position: 'relative',
+    marginTop: 20,
+    marginHorizontal: 16,
+    minHeight: 400,
+  },
+  constructionNet: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1,
+  },
+  netLine: {
+    position: 'absolute',
+    backgroundColor: '#2d5016',
+    zIndex: 2,
+  },
+  netLineHorizontal: {
+    width: '100%',
+    height: 2,
+  },
+  netLineVertical: {
+    width: 2,
+    height: '100%',
+  },
+  questTernButton: {
+    position: 'absolute',
+    zIndex: 5,
+    width: 80,
+    height: 80,
+  },
+  questTernImage: {
+    width: 80,
+    height: 80,
+  },
+  questInstructionContainer: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 12,
+    padding: 12,
+    marginHorizontal: 16,
+    marginBottom: 20,
+  },
+  questInstructionText: {
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: 'CodecPro',
+    textAlign: 'center',
+  },
+  questFactOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    zIndex: 1000,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  questFactContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 24,
+    marginHorizontal: 20,
+    maxWidth: '90%',
+    alignItems: 'center',
+  },
+  questFactText: {
+    fontSize: 16,
+    fontFamily: 'CodecPro',
+    color: '#000',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 24,
+  },
+  questGotItButton: {
+    backgroundColor: '#42accd',
+    borderRadius: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  questGotItText: {
+    fontSize: 18,
+    fontFamily: 'CodecPro',
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  questImageContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    width: '100%',
+    height: PHONE_HEIGHT * 0.5,
+    overflow: 'hidden',
+    zIndex: 0,
+  },
+  questImage: {
+    width: '100%',
+    height: '200%',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   statsCloseButton: {
     position: 'absolute',
