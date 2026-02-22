@@ -176,6 +176,7 @@ export default function App() {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const chatScrollViewRef = useRef(null);
+  const chatInputRef = useRef(null);
   const [tringaEmojis, setTringaEmojis] = useState([]);
   const tringaEmojiIdCounter = useRef(0);
   const [tringaNavExpanded, setTringaNavExpanded] = useState(false);
@@ -457,6 +458,7 @@ export default function App() {
     return (
       <View style={styles.mobileContainer}>
         <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
+          <View style={styles.quizBlurOverlay} />
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
             <View style={styles.quizContent}>
@@ -1806,12 +1808,19 @@ export default function App() {
                 {/* Input area */}
                 <View style={styles.chatInputContainer}>
                   <TextInput
+                    ref={chatInputRef}
                     style={styles.chatInput}
                     placeholder="Type your message..."
                     value={chatInput}
-                    onChangeText={setChatInput}
+                    onChangeText={(text) => {
+                      setChatInput(text);
+                    }}
                     onSubmitEditing={handleSendMessage}
                     placeholderTextColor="rgba(255,255,255,0.5)"
+                    autoCorrect={false}
+                    autoCapitalize="none"
+                    keyboardType="default"
+                    blurOnSubmit={false}
                   />
                   <TouchableOpacity style={styles.chatSendButton} onPress={handleSendMessage}>
                     <Text style={styles.chatSendText}>Send</Text>
@@ -3249,5 +3258,17 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
+  },
+  quizBlurOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'transparent',
+    backdropFilter: 'blur(5px)',
+    WebkitBackdropFilter: 'blur(5px)',
+    zIndex: 0,
+    pointerEvents: 'none',
   },
 });
