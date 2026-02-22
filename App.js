@@ -919,10 +919,6 @@ export default function App() {
                 </TouchableOpacity>
               </View>
             </ScrollView>
-            {/* Quest image at bottom, cropped to show bottom half */}
-            <View style={styles.questImageContainer}>
-              <Image source={QUESTS_IMG} style={styles.questImage} resizeMode="cover" />
-            </View>
           </View>
         </SafeAreaView>
       </ImageBackground>
@@ -3003,7 +2999,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 20,
     marginHorizontal: 16,
-    marginBottom: PHONE_HEIGHT * 0.4 + 20,
+    marginBottom: 20,
   },
   questBoxHeader: {
     fontSize: 24,
@@ -3029,7 +3025,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf: 'center',
+    alignSelf: 'flex-start',
+    marginLeft: 5,
   },
   questStartButtonText: {
     fontSize: 24,
