@@ -512,13 +512,15 @@ export default function App() {
               ) : (
                 <Image source={selectedBird.img} style={styles.idCardImage} resizeMode="contain" />
               )}
-              <Text style={styles.welcomeUserText}>Welcome to{ '\n' }Perchliner!</Text>
-              <TouchableOpacity style={styles.primary} onPress={() => {
-                // Proceed to loading for tram
-                setAppState(APP_STATES.LOADING_TRAM);
-              }}>
-                <Text style={styles.buttonText}>Next</Text>
-              </TouchableOpacity>
+              <View style={{ marginTop: -70, alignItems: 'center' }}>
+                <Text style={styles.welcomeUserText}>Welcome to{ '\n' }Perchliner!</Text>
+                <TouchableOpacity style={styles.primary} onPress={() => {
+                  // Proceed to loading for tram
+                  setAppState(APP_STATES.LOADING_TRAM);
+                }}>
+                  <Text style={styles.buttonText}>Next</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </SafeAreaView>
         </ImageBackground>
