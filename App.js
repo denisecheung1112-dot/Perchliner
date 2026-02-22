@@ -470,9 +470,9 @@ export default function App() {
             <View style={styles.resultContent}>
               <Text style={styles.resultTitle}>YOU ARE A...</Text>
               <Text style={styles.birdTypeTitle}>{result[0].name.toUpperCase()}!</Text>
-              <View style={{ marginTop: 20 }}>
+              <View style={{ marginTop: -70, alignItems: 'center' }}>
                 <Image source={result[0].img} style={[styles.largeBirdImg, styles.resultIdCard]} resizeMode="cover" />
-                <Text style={styles.blurb}>{result[0].blurb}</Text>
+                <Text style={[styles.blurb, { textAlign: 'center' }]}>{result[0].blurb}</Text>
                 <TouchableOpacity style={[styles.primary, styles.resultsBeginButton]} onPress={async () => {
                   setSelectedBird(result[0]);
                   setShowIdCard(true);
@@ -1813,7 +1813,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   resultIdCard: {
-    marginTop: 20,
+    marginTop: 0,
+    alignSelf: 'center',
   },
   profileCreationContent: {
     flex: 1,
@@ -2003,7 +2004,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14, 
     paddingHorizontal: 32,
     alignItems: 'center',
-    width: MOBILE_WIDTH * 0.7,
+    alignSelf: 'center',
+    width: PHONE_WIDTH * 0.7,
     marginTop: 10,
   },
   primaryText: { 
@@ -2751,6 +2753,7 @@ const styles = StyleSheet.create({
   resultsBeginButton: {
     marginTop: 20,
     marginBottom: 0,
+    alignSelf: 'center',
   },
   spongeLabel: {
     fontSize: 14,
