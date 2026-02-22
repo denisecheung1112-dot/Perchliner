@@ -429,15 +429,17 @@ export default function App() {
     
     return (
       <View style={styles.mobileContainer}>
-        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.95 }}>
-          <View style={styles.bgBrightnessOverlay} />
-          <View style={styles.bgSaturationOverlay} />
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
             <View style={styles.quizContent}>
-              <Text style={styles.title}>WHAT BIRD ARE YOU?</Text>
+              <View style={styles.titleGradient}>
+                <Text style={styles.title}>WHAT BIRD ARE YOU?</Text>
+              </View>
               <Text style={styles.progress}>{quizIndex + 1} / {QUESTIONS.length}</Text>
-              <Text style={styles.prompt}>{QUESTIONS[quizIndex].prompt}</Text>
+              <View style={styles.promptGradient}>
+                <Text style={styles.prompt}>{QUESTIONS[quizIndex].prompt}</Text>
+              </View>
               <View style={{ height: 18 }} />
               {QUESTIONS[quizIndex].options.map(o => (
                 <TouchableOpacity key={o.key} style={styles.option} onPress={() => onPickAnswer(o.key)}>
@@ -501,9 +503,7 @@ export default function App() {
     
     return (
       <View style={styles.mobileContainer}>
-        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.95 }}>
-          <View style={styles.bgBrightnessOverlay} />
-          <View style={styles.bgSaturationOverlay} />
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
             <View style={styles.profileCreationContent}>
@@ -553,9 +553,7 @@ export default function App() {
   const renderLoadingTramScreen = () => {
     return (
       <View style={styles.mobileContainer}>
-        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.95 }}>
-          <View style={styles.bgBrightnessOverlay} />
-          <View style={styles.bgSaturationOverlay} />
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
             <View style={styles.loadingContent}>
@@ -1160,18 +1158,18 @@ export default function App() {
         });
       },
       onPanResponderMove: (evt, gestureState) => {
-        Animated.event([null, { dx: spongePan.x, dy: spongePan.y }], { useNativeDriver: false })(evt, gestureState);
+        spongePan.setValue({ x: gestureState.dx, y: gestureState.dy });
         const { pageX, pageY } = evt.nativeEvent;
         spongeGlobalPosition.current = { x: pageX, y: pageY };
 
         // Check if over bird and create bubbles
-        const birdCenterX = MOBILE_WIDTH / 2;
+        const birdCenterX = PHONE_WIDTH / 2;
         const birdCenterY = PHONE_HEIGHT * 0.45;
         const distance = Math.sqrt(
           Math.pow(pageX - birdCenterX, 2) + Math.pow(pageY - birdCenterY, 2)
         );
 
-        if (distance < MOBILE_WIDTH * 0.25) {
+        if (distance < PHONE_WIDTH * 0.25) {
           if (!isWashing) {
             setIsWashing(true);
             setWashTime(0);
@@ -1366,12 +1364,11 @@ export default function App() {
                 )}
                 {tringaNavMode === 'tasks' && (
                   <View style={styles.tasksContent}>
-                    <View style={styles.spongeWrapper} pointerEvents="box-none">
+                    <View style={styles.spongeWrapper}>
                       <Animated.View
                         {...spongePanResponder.panHandlers}
                         style={[
                           styles.spongeEmojiWrapper,
-                          isDragging && styles.spongeItemDragging,
                           {
                             transform: [
                               { translateX: spongePan.x },
@@ -1522,9 +1519,7 @@ export default function App() {
     
     return (
       <View style={styles.mobileContainer}>
-        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.95 }}>
-          <View style={styles.bgBrightnessOverlay} />
-          <View style={styles.bgSaturationOverlay} />
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
             <View style={{ flex: 1 }}>
@@ -1975,6 +1970,30 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 4,
+  },
+  titleGradient: {
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  promptGradient: {
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 20,
+    elevation: 10,
   },
   backButton: {
     alignSelf: 'center',
