@@ -131,12 +131,14 @@ const APP_STATES = {
   TRAM_GAME: 'tram_game',
 };
 
-// 9:16 aspect ratio dimensions - using standard iPhone height
-const PHONE_WIDTH = 375;
-const PHONE_HEIGHT = 812; // Standard iPhone height for proper 9:16 display
+// Screen dimensions - use original screen size
+const PHONE_WIDTH = screenWidth;
+const PHONE_HEIGHT = screenHeight;
 const NOTCH_WIDTH = 132; // ~35mm on iPhone X-12
 const NOTCH_HEIGHT = 20; // ~5.3mm
 const BOTTOM_SAFE_AREA = 34; // Space for home indicator
+const TOP_TEXT_SAFE_ZONE = 200; // Minimum distance from top for text
+const BOTTOM_TEXT_SAFE_ZONE = 150; // Minimum distance from bottom for text
 
 export default function App() {
   const [appState, setAppState] = useState(APP_STATES.QUIZ);
@@ -461,30 +463,34 @@ export default function App() {
       <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.85 }}>
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
-          <View style={[styles.header, styles.resultsHeader]}>
-          </View>
-          
-          <View style={styles.resultContent}>
-            <Text style={styles.resultTitle}>YOU ARE A...</Text>
-            <Text style={styles.birdTypeTitle}>{result[0].name.toUpperCase()}!</Text>
-            <Image source={result[0].img} style={[styles.largeBirdImg, styles.resultIdCard]} resizeMode="cover" />
-            <Text style={styles.blurb}>{result[0].blurb}</Text>
-            <TouchableOpacity style={[styles.primary, styles.resultsBeginButton]} onPress={async () => {
-              setSelectedBird(result[0]);
-              setShowIdCard(true);
-              // Save quiz completion and selected bird
-              try {
-                await AsyncStorage.setItem('quizCompleted', 'true');
-                await AsyncStorage.setItem('selectedBird', JSON.stringify(result[0]));
-              } catch (error) {
-                console.log('Error saving quiz completion:', error);
-              }
-              setTramVisitCount(0); // Reset tram visit count for new session
-              setAppState(APP_STATES.PROFILE_CREATION);
-            }}>
-              <Text style={styles.primaryText}>Begin</Text>
-            </TouchableOpacity>
-          </View>
+          <ScrollView 
+            contentContainerStyle={styles.resultContentScroll}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.resultContent}>
+              <Text style={styles.resultTitle}>YOU ARE A...</Text>
+              <Text style={styles.birdTypeTitle}>{result[0].name.toUpperCase()}!</Text>
+              <View style={{ marginTop: Math.max(0, TOP_TEXT_SAFE_ZONE - 100) }}>
+                <Image source={result[0].img} style={[styles.largeBirdImg, styles.resultIdCard]} resizeMode="cover" />
+                <Text style={styles.blurb}>{result[0].blurb}</Text>
+                <TouchableOpacity style={[styles.primary, styles.resultsBeginButton]} onPress={async () => {
+                  setSelectedBird(result[0]);
+                  setShowIdCard(true);
+                  // Save quiz completion and selected bird
+                  try {
+                    await AsyncStorage.setItem('quizCompleted', 'true');
+                    await AsyncStorage.setItem('selectedBird', JSON.stringify(result[0]));
+                  } catch (error) {
+                    console.log('Error saving quiz completion:', error);
+                  }
+                  setTramVisitCount(0); // Reset tram visit count for new session
+                  setAppState(APP_STATES.PROFILE_CREATION);
+                }}>
+                  <Text style={styles.primaryText}>Begin</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
         </SafeAreaView>
       </ImageBackground>
     </View>
@@ -810,7 +816,7 @@ export default function App() {
         {/* Blur overlay when bird is clicked */}
         {arInfo && <View style={styles.arBlurOverlay} />}
         {/* Instruction banner */}
-        <View style={[styles.resultOverlay, { position: 'absolute', bottom: Math.max(80, BOTTOM_SAFE_AREA + 60), left: 16, right: 16 }]}>
+        <View style={[styles.resultOverlay, { position: 'absolute', bottom: BOTTOM_TEXT_SAFE_ZONE + 60, left: 16, right: 16 }]}>
           <Text style={styles.tramResultText}>Click on any bird to learn more about the species and gain rewards!</Text>
         </View>
         {/* Birds - only show visible ones, scattered positions */}
@@ -826,7 +832,7 @@ export default function App() {
           </Animated.View>
         ))}
         {arInfo && (
-          <View style={[styles.resultOverlay, { position: 'absolute', bottom: Math.max(90, BOTTOM_SAFE_AREA + 70), left: 16, right: 16, zIndex: 1000 }] }>
+          <View style={[styles.resultOverlay, { position: 'absolute', bottom: BOTTOM_TEXT_SAFE_ZONE + 70, left: 16, right: 16, zIndex: 1000 }] }>
             <TouchableOpacity onPress={() => setArInfo(null)}>
               <Text style={styles.tramResultText}>{arInfo.text}</Text>
             </TouchableOpacity>
@@ -1644,18 +1650,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   phoneFrame: {
-    width: PHONE_WIDTH,
-    height: PHONE_HEIGHT,
+    width: '100%',
+    height: '100%',
     backgroundColor: '#000',
     borderRadius: 0,
     overflow: 'hidden',
     position: 'relative',
-    alignSelf: 'center',
   },
   notch: {
     position: 'absolute',
     top: 0,
-    left: (PHONE_WIDTH - NOTCH_WIDTH) / 2,
+    left: '50%',
+    marginLeft: -NOTCH_WIDTH / 2,
     width: NOTCH_WIDTH,
     height: NOTCH_HEIGHT,
     backgroundColor: '#000',
@@ -1670,6 +1676,7 @@ const styles = StyleSheet.create({
     paddingTop: NOTCH_HEIGHT,
     paddingBottom: 0,
     overflow: 'hidden',
+    paddingHorizontal: 0,
   },
   bottomSafeArea: {
     position: 'absolute',
@@ -1683,7 +1690,7 @@ const styles = StyleSheet.create({
   resetButton: {
     position: 'absolute',
     top: NOTCH_HEIGHT + 8,
-    right: 16,
+    left: 16,
     width: 32,
     height: 32,
     zIndex: 2000,
@@ -1711,7 +1718,9 @@ const styles = StyleSheet.create({
   },
   safe: { 
     flex: 1, 
-    paddingHorizontal: 20, 
+    paddingHorizontal: 20,
+    paddingTop: TOP_TEXT_SAFE_ZONE,
+    paddingBottom: BOTTOM_TEXT_SAFE_ZONE,
     justifyContent: 'center',
   },
   header: {
@@ -1761,10 +1770,17 @@ const styles = StyleSheet.create({
     gap: 16,
     paddingHorizontal: 16,
   },
+  resultContentScroll: {
+    flexGrow: 1,
+    paddingBottom: BOTTOM_TEXT_SAFE_ZONE,
+  },
   resultContent: {
     alignItems: 'center',
     gap: 16,
     paddingHorizontal: 16,
+    paddingTop: 0,
+    paddingBottom: 20,
+    marginTop: 0,
   },
   resultTitle: {
     fontSize: 34,
@@ -1793,7 +1809,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   resultIdCard: {
-    marginTop: 50,
+    marginTop: 20,
   },
   profileCreationContent: {
     flex: 1,
@@ -2258,7 +2274,7 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     position: 'absolute',
-    bottom: BOTTOM_SAFE_AREA + 12,
+    bottom: BOTTOM_TEXT_SAFE_ZONE + 12,
     left: 16,
     right: 16,
     height: 56,
@@ -2289,7 +2305,7 @@ const styles = StyleSheet.create({
   },
   bottomBanner: {
     position: 'absolute',
-    bottom: Math.max(72, BOTTOM_SAFE_AREA + 60),
+    bottom: BOTTOM_TEXT_SAFE_ZONE + 60,
     left: 16,
     right: 16,
     backgroundColor: 'rgba(0,0,0,0.3)',
@@ -2538,7 +2554,7 @@ const styles = StyleSheet.create({
   },
   tringaBottomNav: {
     position: 'absolute',
-    bottom: BOTTOM_SAFE_AREA + 12,
+    bottom: BOTTOM_TEXT_SAFE_ZONE + 12,
     left: 16,
     right: 16,
     backgroundColor: 'rgba(0,0,0,0.35)',
@@ -2729,7 +2745,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   resultsBeginButton: {
-    marginTop: 5,
+    marginTop: 20,
+    marginBottom: 0,
   },
   spongeLabel: {
     fontSize: 14,
