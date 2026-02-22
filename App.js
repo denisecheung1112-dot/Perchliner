@@ -131,9 +131,9 @@ const APP_STATES = {
   TRAM_GAME: 'tram_game',
 };
 
-// Screen dimensions - use original screen size
-const PHONE_WIDTH = screenWidth;
-const PHONE_HEIGHT = screenHeight;
+// Phone frame dimensions - fixed iPhone size
+const PHONE_WIDTH = 375; // iPhone standard width
+const PHONE_HEIGHT = 812; // iPhone standard height (9:16 ratio)
 const NOTCH_WIDTH = 132; // ~35mm on iPhone X-12
 const NOTCH_HEIGHT = 20; // ~5.3mm
 const BOTTOM_SAFE_AREA = 34; // Space for home indicator
@@ -1640,9 +1640,11 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: '#1a1a1a',
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
+    height: '100%',
   },
   loadingText: {
     color: 'white',
@@ -1650,18 +1652,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   phoneFrame: {
-    width: '100%',
-    height: '100%',
+    width: PHONE_WIDTH,
+    height: PHONE_HEIGHT,
     backgroundColor: '#000',
-    borderRadius: 0,
+    borderRadius: screenWidth > PHONE_WIDTH ? 20 : 0,
     overflow: 'hidden',
     position: 'relative',
+    alignSelf: 'center',
+    maxWidth: PHONE_WIDTH,
+    maxHeight: PHONE_HEIGHT,
   },
   notch: {
     position: 'absolute',
     top: 0,
-    left: '50%',
-    marginLeft: -NOTCH_WIDTH / 2,
+    left: (PHONE_WIDTH - NOTCH_WIDTH) / 2,
     width: NOTCH_WIDTH,
     height: NOTCH_HEIGHT,
     backgroundColor: '#000',
