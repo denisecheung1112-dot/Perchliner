@@ -714,8 +714,8 @@ export default function App() {
                     ) : (
                       <Text style={styles.tramResultText}>
                         {isFirstQuestion 
-                          ? 'Oh no, the right answer is B- Pond ducks can\'t eat bread because it is nutritionally deficient, leading to malnutrition and health problems like angel wing syndrome. Unfortunately, you could not save the wounded bird. Try again next time!'
-                          : 'Oh no, the right answer is B- Habitat loss due to urban development leads to ecosystems being affected, and overall the biodiversity of birds, through the physical destruction of natural areas and the fragmentation of remaining habitats into smaller, isolated patches. Unfortunately, you could not save the wounded bird. Try again next time!'}
+                          ? 'The right answer is B- Pond ducks can\'t eat bread because it is nutritionally deficient, leading to health problems like angel wing syndrome. Try again next time!'
+                          : 'The right answer is B- Habitat loss due to urban development leads to ecosystems and bird biodiversity being affected, through the physical destruction of natural areas and the fragmentation of remaining habitats into smaller, isolated patches. Try again next time!'}
                       </Text>
                     )}
                   </View>
@@ -812,17 +812,18 @@ export default function App() {
         <TouchableOpacity style={styles.homeIcon} onPress={() => { setArActive(false); setAppState('home'); }}>
           <Text style={styles.homeIconText}>⌂</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.arSwitch} onPress={() => setArFacing(f => f === 'environment' ? 'user' : 'environment')}>
-          <Text style={styles.primaryText}>Switch camera</Text>
-        </TouchableOpacity>
         {/* Camera preview */}
-        <video ref={videoRef} playsInline muted autoPlay style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover' }} />
+        <video ref={videoRef} playsInline muted autoPlay style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover', zIndex: 1 }} />
         {/* Blur overlay when bird is clicked */}
         {arInfo && <View style={styles.arBlurOverlay} />}
         {/* Instruction banner */}
-        <View style={[styles.resultOverlay, { position: 'absolute', bottom: BOTTOM_TEXT_SAFE_ZONE + 60, left: 16, right: 16 }]}>
+        <View style={[styles.resultOverlay, { position: 'absolute', bottom: BOTTOM_TEXT_SAFE_ZONE + 60, left: 16, right: 16, zIndex: 100 }]}>
           <Text style={styles.tramResultText}>Click on any bird to learn more about the species and gain rewards!</Text>
         </View>
+        {/* Switch camera button - below instruction banner */}
+        <TouchableOpacity style={[styles.arSwitch, { position: 'absolute', bottom: BOTTOM_TEXT_SAFE_ZONE + 10, left: 16, zIndex: 100 }]} onPress={() => setArFacing(f => f === 'environment' ? 'user' : 'environment')}>
+          <Text style={styles.primaryText}>Switch camera</Text>
+        </TouchableOpacity>
         {/* Birds - only show visible ones, scattered positions */}
         {arBirds.filter(b => b.visible).map(b => (
           <Animated.View key={b.key} style={[styles.arBird, { 
@@ -870,7 +871,7 @@ export default function App() {
 
   const renderBirdsCollectionScreen = () => (
     <View style={styles.mobileContainer}>
-        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
+        <ImageBackground source={HOME_BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
           <View style={{ flex: 1 }}>
@@ -1157,23 +1158,6 @@ export default function App() {
         spongePan.setValue({ x: gestureState.dx, y: gestureState.dy });
         const { pageX, pageY } = evt.nativeEvent;
         spongeGlobalPosition.current = { x: pageX, y: pageY };
-
-        // Check if over bird and create bubbles
-        const birdCenterX = PHONE_WIDTH / 2;
-        const birdCenterY = PHONE_HEIGHT * 0.45;
-        const distance = Math.sqrt(
-          Math.pow(pageX - birdCenterX, 2) + Math.pow(pageY - birdCenterY, 2)
-        );
-
-        if (distance < PHONE_WIDTH * 0.25) {
-          if (!isWashing) {
-            setIsWashing(true);
-            setWashTime(0);
-          }
-          if (Math.random() < 0.3) {
-            createBubbleEmoji(pageX, pageY);
-          }
-        }
       },
       onPanResponderRelease: () => {
         setIsDragging(false);
@@ -1188,7 +1172,25 @@ export default function App() {
     })
   ).current;
 
-  // Washing timer effect
+  // Automatic bubble generation every 2 seconds when tasks mode is open
+  useEffect(() => {
+    if (tringaNavMode !== 'tasks') return;
+    
+    const bubbleInterval = setInterval(() => {
+      // Create bubble at bird center position
+      const birdCenterX = PHONE_WIDTH / 2;
+      const birdCenterY = PHONE_HEIGHT * 0.45;
+      createBubbleEmoji(birdCenterX, birdCenterY);
+      
+      // Increase health by 10% for each bubble (max 100%)
+      setHealth(prev => Math.min(100, prev + 10));
+    }, 2000);
+    
+    return () => clearInterval(bubbleInterval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tringaNavMode]);
+
+  // Washing timer effect (kept for compatibility but health is now managed by bubbles)
   useEffect(() => {
     let interval;
     if (isWashing) {
@@ -1196,8 +1198,6 @@ export default function App() {
         setWashTime(prev => {
           const newTime = prev + 0.1;
           if (newTime >= 20) {
-            // 20 seconds completed, set health to 100%
-            setHealth(100);
             setIsWashing(false);
             return 20;
           }
@@ -1360,6 +1360,15 @@ export default function App() {
                 )}
                 {tringaNavMode === 'tasks' && (
                   <View style={styles.tasksContent}>
+                    <TouchableOpacity 
+                      style={styles.tasksCloseButton}
+                      onPress={() => {
+                        setTringaNavExpanded(false);
+                        setTringaNavMode(null);
+                      }}
+                    >
+                      <Text style={styles.tasksCloseButtonText}>✕</Text>
+                    </TouchableOpacity>
                     <View style={styles.spongeWrapper}>
                       <Animated.View
                         {...spongePanResponder.panHandlers}
@@ -1377,6 +1386,27 @@ export default function App() {
                       </Animated.View>
                       <Text style={styles.spongeLabel}>Clean bird</Text>
                     </View>
+                    {/* Bubble emojis */}
+                    {bubbleEmojis.map(emoji => (
+                      <Animated.View
+                        key={emoji.id}
+                        style={[
+                          styles.bubbleEmojiContainer,
+                          {
+                            left: emoji.x,
+                            top: emoji.y,
+                            opacity: emoji.opacity,
+                            transform: [
+                              { translateX: emoji.translateX },
+                              { translateY: emoji.translateY },
+                              { scale: emoji.scale },
+                            ],
+                          },
+                        ]}
+                      >
+                        <Text style={styles.bubbleEmojiText}>{emoji.emoji}</Text>
+                      </Animated.View>
+                    ))}
                   </View>
                 )}
                 {tringaNavMode === 'stats' && (
@@ -1483,7 +1513,7 @@ export default function App() {
               <TouchableOpacity style={styles.homeIcon} onPress={() => setAppState('home')}>
                 <Text style={styles.homeIconText}>⌂</Text>
               </TouchableOpacity>
-              <View style={{ marginTop: 130 }}>
+              <View style={{ marginTop: 105 }}>
                 <Text style={styles.locationHeaderTop}>YOUR PROFILE</Text>
               </View>
               
@@ -1951,24 +1981,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 10,
+    borderRadius: 30,
     marginBottom: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.65,
-    shadowRadius: 20,
+    shadowRadius: 50,
     elevation: 10,
   },
   promptGradient: {
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 10,
+    borderRadius: 30,
     marginBottom: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.65,
-    shadowRadius: 20,
+    shadowRadius: 50,
     elevation: 10,
   },
   backButton: {
@@ -1987,7 +2017,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#118ab2', 
     padding: 14, 
     borderRadius: 12, 
-    marginVertical: 4,
+    marginVertical: 3.5,
     marginHorizontal: 12,
     alignSelf: 'stretch',
     minHeight: 48,
@@ -2555,7 +2585,7 @@ const styles = StyleSheet.create({
   },
   profileIdCardContainer: {
     alignItems: 'center',
-    marginTop: -80,
+    marginTop: -105,
     marginBottom: 24,
   },
   profileIdCard: {
@@ -2566,7 +2596,7 @@ const styles = StyleSheet.create({
   profileStatsContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -165,
+    marginTop: -190,
   },
   profileStats: {
     backgroundColor: 'rgba(0,0,0,0.3)',
@@ -2710,6 +2740,30 @@ const styles = StyleSheet.create({
     position: 'relative',
     padding: 20,
     minHeight: MOBILE_WIDTH * 0.3,
+  },
+  tasksCloseButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  tasksCloseButtonText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  bubbleEmojiContainer: {
+    position: 'absolute',
+    zIndex: 100,
+  },
+  bubbleEmojiText: {
+    fontSize: 30,
   },
   statsCloseButton: {
     position: 'absolute',
