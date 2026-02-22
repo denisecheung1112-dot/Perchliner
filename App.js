@@ -137,8 +137,8 @@ const PHONE_HEIGHT = 812; // iPhone standard height (9:16 ratio)
 const NOTCH_WIDTH = 132; // ~35mm on iPhone X-12
 const NOTCH_HEIGHT = 20; // ~5.3mm
 const BOTTOM_SAFE_AREA = 34; // Space for home indicator
-const TOP_TEXT_SAFE_ZONE = 200; // Minimum distance from top for text
-const BOTTOM_TEXT_SAFE_ZONE = 150; // Minimum distance from bottom for text
+const TOP_TEXT_SAFE_ZONE = 70; // Minimum distance from top for text
+const BOTTOM_TEXT_SAFE_ZONE = 40; // Minimum distance from bottom for text
 
 export default function App() {
   const [appState, setAppState] = useState(APP_STATES.QUIZ);
@@ -470,7 +470,7 @@ export default function App() {
             <View style={styles.resultContent}>
               <Text style={styles.resultTitle}>YOU ARE A...</Text>
               <Text style={styles.birdTypeTitle}>{result[0].name.toUpperCase()}!</Text>
-              <View style={{ marginTop: Math.max(0, TOP_TEXT_SAFE_ZONE - 100) }}>
+              <View style={{ marginTop: 20 }}>
                 <Image source={result[0].img} style={[styles.largeBirdImg, styles.resultIdCard]} resizeMode="cover" />
                 <Text style={styles.blurb}>{result[0].blurb}</Text>
                 <TouchableOpacity style={[styles.primary, styles.resultsBeginButton]} onPress={async () => {
