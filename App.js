@@ -35,10 +35,10 @@ const QUESTIONS = [
   {
     prompt: '2. When faced with a problem, you tend to:',
     options: [
-      { key: 'A', label: 'Collaborate with others to find a solution' },
-      { key: 'B', label: 'Take your time and think things through carefully' },
+      { key: 'A', label: 'Collaborate with others' },
+      { key: 'B', label: 'Think things through carefully' },
       { key: 'C', label: 'Tackle it head-on with a strategic plan' },
-      { key: 'D', label: 'Adapt your approach based on the situation' },
+      { key: 'D', label: 'Adapt based on the situation' },
     ],
   },
   {
@@ -46,7 +46,7 @@ const QUESTIONS = [
     options: [
       { key: 'A', label: 'I love new experiences and adventures!' },
       { key: 'B', label: 'I prefer to stay in my comfort zone but I take risks sometimes' },
-      { key: 'C', label: 'I am willing to take calculated risks if it means achieving my goal' },
+      { key: 'C', label: 'I take calculated risks for my goals' },
       { key: 'D', label: 'I am flexible and can adjust my plans as needed' },
     ],
   },
@@ -54,8 +54,8 @@ const QUESTIONS = [
     prompt: '4. What best describes your social interactions?',
     options: [
       { key: 'A', label: 'I thrive in large gatherings and enjoy being the center of attention.' },
-      { key: 'B', label: 'I prefer small, intimate gatherings with close friends.' },
-      { key: 'C', label: 'I am social but can also enjoy my own space.' },
+      { key: 'B', label: 'I prefer small gatherings with close friends.' },
+      { key: 'C', label: 'I enjoy my own space but can be social.' },
       { key: 'D', label: 'I enjoy forming deep connections with individuals' },
     ],
   },
@@ -63,8 +63,8 @@ const QUESTIONS = [
     prompt: '5. What describes your ideal vacation?',
     options: [
       { key: 'A', label: 'A lively trip to a popular destination.' },
-      { key: 'B', label: 'A peaceful secluded retreat or maybe I will just stay at home and sleep.' },
-      { key: 'C', label: 'An adventure far from home filled with the things I love.' },
+      { key: 'B', label: 'I\'d rather stay at home and sleep.' },
+      { key: 'C', label: 'An adventure about the things I love' },
       { key: 'D', label: 'A journey with friends where I can explore diverse environments.' },
     ],
   },
@@ -470,7 +470,7 @@ export default function App() {
             <View style={styles.resultContent}>
               <Text style={styles.resultTitle}>YOU ARE A...</Text>
               <Text style={styles.birdTypeTitle}>{result[0].name.toUpperCase()}!</Text>
-              <View style={{ marginTop: -55, alignItems: 'center' }}>
+              <View style={{ marginTop: -50, alignItems: 'center' }}>
                 <Image source={result[0].img} style={[styles.largeBirdImg, styles.resultIdCard]} resizeMode="cover" />
                 <Text style={[styles.blurb, { textAlign: 'center' }]}>{result[0].blurb}</Text>
                 <TouchableOpacity style={[styles.primary, styles.resultsBeginButton]} onPress={async () => {
@@ -506,13 +506,13 @@ export default function App() {
             <StatusBar style="dark" />
             <View style={styles.profileCreationContent}>
               {showIdCard && selectedBird.idCard ? (
-                <Animated.View style={[styles.idCardWrapper, { transform: [{ scale: animatedValue }] }]}>
+                <Animated.View style={[styles.idCardWrapper, { transform: [{ scale: animatedValue }], marginTop: -50 }]}>
                   <Image source={selectedBird.idCard} style={styles.idCardImage} resizeMode="contain" />
                 </Animated.View>
               ) : (
-                <Image source={selectedBird.img} style={styles.idCardImage} resizeMode="contain" />
+                <Image source={selectedBird.img} style={[styles.idCardImage, { marginTop: -50 }]} resizeMode="contain" />
               )}
-              <View style={{ marginTop: -120, alignItems: 'center' }}>
+              <View style={{ marginTop: -180, alignItems: 'center' }}>
                 <Text style={styles.welcomeUserText}>Welcome to{ '\n' }Perchliner!</Text>
                 <TouchableOpacity style={styles.primary} onPress={() => {
                   // Proceed to loading for tram
@@ -1391,6 +1391,15 @@ export default function App() {
                 )}
                 {tringaNavMode === 'stats' && (
                   <View style={styles.statsContent}>
+                    <TouchableOpacity 
+                      style={styles.statsCloseButton}
+                      onPress={() => {
+                        setTringaNavExpanded(false);
+                        setTringaNavMode(null);
+                      }}
+                    >
+                      <Text style={styles.statsCloseButtonText}>✕</Text>
+                    </TouchableOpacity>
                     <View style={styles.statBarContainer}>
                       <Text style={styles.statLabel}>HAPPINESS</Text>
                       <View style={styles.statBarOuter}>
@@ -1949,18 +1958,22 @@ const styles = StyleSheet.create({
     textShadowRadius: 4,
   },
   titleGradient: {
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginBottom: 8,
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
   },
   promptGradient: {
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
     marginBottom: 8,
+    backdropFilter: 'blur(10px)',
+    WebkitBackdropFilter: 'blur(10px)',
   },
   backButton: {
     alignSelf: 'center',
@@ -2089,8 +2102,8 @@ const styles = StyleSheet.create({
   tramContent: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 0,
-    gap: 20,
+    paddingTop: -20,
+    gap: 15,
     paddingBottom: 40,
   },
   locationHeaderTop: {
@@ -2149,9 +2162,11 @@ const styles = StyleSheet.create({
     marginVertical: 2,
     marginHorizontal: 8,
     minHeight: 28,
+    width: '85%',
+    alignSelf: 'center',
   },
   tramOptionText: {
-    fontSize: 12,
+    fontSize: 13,
     lineHeight: 16,
   },
   healArea: {
@@ -2228,7 +2243,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     gap: 12,
-    marginTop: 140,
+    marginTop: 125,
   },
   arContainer: {
     flex: 1,
@@ -2700,10 +2715,28 @@ const styles = StyleSheet.create({
     padding: 20,
     minHeight: MOBILE_WIDTH * 0.3,
   },
+  statsCloseButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  statsCloseButtonText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
   statsContent: {
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+    position: 'relative',
   },
   expandedContentText: {
     fontSize: 16,
