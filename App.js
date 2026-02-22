@@ -2199,11 +2199,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 30,
     marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.65,
-    shadowRadius: 50,
-    elevation: 10,
   },
   promptGradient: {
     backgroundColor: 'rgba(17, 138, 178, 0.5)',
@@ -2211,11 +2206,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 30,
     marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.65,
-    shadowRadius: 50,
-    elevation: 10,
   },
   backButton: {
     alignSelf: 'center',
@@ -3074,12 +3064,12 @@ const styles = StyleSheet.create({
   questTernButton: {
     position: 'absolute',
     zIndex: 5,
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
   },
   questTernImage: {
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
   },
   questInstructionContainer: {
     backgroundColor: 'rgba(0,0,0,0.5)',
