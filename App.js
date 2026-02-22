@@ -715,7 +715,7 @@ export default function App() {
                       <Text style={styles.tramResultText}>
                         {isFirstQuestion 
                           ? 'The right answer is B- Pond ducks can\'t eat bread because it is nutritionally deficient, leading to health problems like angel wing syndrome. Try again next time!'
-                          : 'The right answer is B- Habitat loss due to urban development leads to ecosystems and bird biodiversity being affected, through the physical destruction of natural areas and the fragmentation of remaining habitats into smaller, isolated patches. Try again next time!'}
+                          : 'The right answer is B- Habitat loss due to urban development affects ecosystems and bird biodiversity through destructing natural areas and making habitats smaller and isolated. Try again next time!'}
                       </Text>
                     )}
                   </View>
@@ -1143,8 +1143,11 @@ export default function App() {
   // Sponge pan responder
   const spongePanResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Only activate on drag, not on tap
+        return Math.abs(gestureState.dx) > 10 || Math.abs(gestureState.dy) > 10;
+      },
       onPanResponderGrant: (evt) => {
         setIsDragging(true);
         const { pageX, pageY } = evt.nativeEvent;
@@ -1382,7 +1385,20 @@ export default function App() {
                           }
                         ]}
                       >
-                        <Text style={styles.spongeEmoji}>🧽</Text>
+                        <TouchableOpacity
+                          activeOpacity={0.7}
+                          onPress={() => {
+                            // Create bubble at bird center position when clicked
+                            const birdCenterX = PHONE_WIDTH / 2;
+                            const birdCenterY = PHONE_HEIGHT * 0.45;
+                            createBubbleEmoji(birdCenterX, birdCenterY);
+                            // Increase health by 10% for each bubble (max 100%)
+                            setHealth(prev => Math.min(100, prev + 10));
+                          }}
+                          style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <Text style={styles.spongeEmoji}>🧽</Text>
+                        </TouchableOpacity>
                       </Animated.View>
                       <Text style={styles.spongeLabel}>Clean bird</Text>
                     </View>
@@ -1978,7 +1994,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 4,
   },
   titleGradient: {
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: '#118ab2',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 30,
@@ -1990,7 +2006,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   promptGradient: {
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: '#118ab2',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 30,
@@ -2016,7 +2032,7 @@ const styles = StyleSheet.create({
   option: { 
     backgroundColor: '#118ab2', 
     padding: 14, 
-    borderRadius: 12, 
+    borderRadius: 20, 
     marginVertical: 3.5,
     marginHorizontal: 12,
     alignSelf: 'stretch',
