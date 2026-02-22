@@ -124,7 +124,6 @@ const BIRD_CHAT_DATA = {
 
 // App states
 const APP_STATES = {
-  LOGIN: 'login',
   NAME_INPUT: 'name_input',
   QUIZ: 'quiz',
   RESULTS: 'results',
@@ -133,8 +132,15 @@ const APP_STATES = {
   TRAM_GAME: 'tram_game',
 };
 
+// 9:16 aspect ratio dimensions
+const PHONE_WIDTH = 375;
+const PHONE_HEIGHT = Math.round(PHONE_WIDTH * 16 / 9); // 667px for 9:16
+const NOTCH_WIDTH = 132; // ~35mm on iPhone X-12
+const NOTCH_HEIGHT = 20; // ~5.3mm
+const BOTTOM_SAFE_AREA = 34; // Space for home indicator
+
 export default function App() {
-  const [appState, setAppState] = useState(APP_STATES.LOGIN);
+  const [appState, setAppState] = useState(APP_STATES.NAME_INPUT);
   const [userName, setUserName] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [quizIndex, setQuizIndex] = useState(0);
@@ -360,27 +366,16 @@ export default function App() {
             setAppState(APP_STATES.QUIZ);
           }
         } else {
-          setAppState(APP_STATES.LOGIN);
+          setAppState(APP_STATES.NAME_INPUT);
         }
       } else {
-        setAppState(APP_STATES.LOGIN);
+        setAppState(APP_STATES.NAME_INPUT);
       }
     } catch (error) {
       console.log('Error checking saved login:', error);
     }
   };
 
-  const handleSignUp = () => {
-    // Mock sign up
-    Alert.alert('Sign Up', 'Sign up would be implemented here');
-    setAppState(APP_STATES.NAME_INPUT);
-  };
-
-  const handleLogIn = () => {
-    // Mock log in
-    Alert.alert('Log In', 'Log in would be implemented here');
-    setAppState(APP_STATES.NAME_INPUT);
-  };
 
   const handleNameSubmit = async () => {
     if (nameInput.trim().length < 2) {
@@ -415,7 +410,7 @@ export default function App() {
     setQuizIndex(0);
     setAnswers([]);
     setNameInput('');
-    setAppState(APP_STATES.LOGIN);
+    setAppState(APP_STATES.NAME_INPUT);
   };
 
   const isQuizDone = quizIndex >= QUESTIONS.length;
@@ -442,29 +437,6 @@ export default function App() {
     setAppState(APP_STATES.QUIZ);
   };
 
-  const renderLoginScreen = () => (
-    <View style={styles.mobileContainer}>
-      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.85 }}>
-        <SafeAreaView style={styles.safe}>
-          <StatusBar style="dark" />
-          <View style={styles.loginCard}>
-            <Text style={styles.appTitle}>Perchliner</Text>
-            <Text style={styles.subtitle}>begin our game now!</Text>
-            
-            <View style={styles.loginButtons}>
-              <TouchableOpacity style={styles.signUpButton} onPress={handleSignUp}>
-                <Text style={styles.buttonText}>Sign Up</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.logInButton} onPress={handleLogIn}>
-                <Text style={styles.buttonText}>Log In</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </SafeAreaView>
-      </ImageBackground>
-    </View>
-  );
 
   const renderNameInputScreen = () => (
     <View style={styles.mobileContainer}>
@@ -912,15 +884,15 @@ export default function App() {
         {/* Blur overlay when bird is clicked */}
         {arInfo && <View style={styles.arBlurOverlay} />}
         {/* Instruction banner */}
-        <View style={[styles.resultOverlay, { position: 'absolute', bottom: 80, left: 16, right: 16 }]}>
+        <View style={[styles.resultOverlay, { position: 'absolute', bottom: Math.max(80, BOTTOM_SAFE_AREA + 60), left: 16, right: 16 }]}>
           <Text style={styles.tramResultText}>Click on any bird to learn more about the species and gain rewards!</Text>
         </View>
         {/* Birds - only show visible ones, scattered positions */}
         {arBirds.filter(b => b.visible).map(b => (
           <Animated.View key={b.key} style={[styles.arBird, { 
             opacity: b.opacity, 
-            left: MOBILE_WIDTH * b.x - (MOBILE_WIDTH * 0.4) / 2,
-            top: MOBILE_HEIGHT * b.y - (MOBILE_WIDTH * 0.4) / 2,
+            left: PHONE_WIDTH * b.x - (PHONE_WIDTH * 0.4) / 2,
+            top: PHONE_HEIGHT * b.y - (PHONE_WIDTH * 0.4) / 2,
           }]}>
             <TouchableOpacity onPress={() => setArInfo(b)}>
               <Image source={b.img} style={styles.arBirdImg} resizeMode="contain" />
@@ -928,7 +900,7 @@ export default function App() {
           </Animated.View>
         ))}
         {arInfo && (
-          <View style={[styles.resultOverlay, { position: 'absolute', bottom: 90, left: 16, right: 16, zIndex: 1000 }] }>
+          <View style={[styles.resultOverlay, { position: 'absolute', bottom: Math.max(90, BOTTOM_SAFE_AREA + 70), left: 16, right: 16, zIndex: 1000 }] }>
             <TouchableOpacity onPress={() => setArInfo(null)}>
               <Text style={styles.tramResultText}>{arInfo.text}</Text>
             </TouchableOpacity>
@@ -1221,7 +1193,7 @@ export default function App() {
   const isSpongeOverBird = (spongeX, spongeY) => {
     // Bird is roughly centered, adjust these values based on actual bird position
     const birdCenterX = MOBILE_WIDTH / 2;
-    const birdCenterY = MOBILE_HEIGHT * 0.5; // Adjust based on actual bird position
+    const birdCenterY = PHONE_HEIGHT * 0.5; // Adjust based on actual bird position
     const birdRadius = MOBILE_WIDTH * 0.2;
     
     const distance = Math.sqrt(
@@ -1252,7 +1224,7 @@ export default function App() {
 
         // Check if over bird and create bubbles
         const birdCenterX = MOBILE_WIDTH / 2;
-        const birdCenterY = MOBILE_HEIGHT * 0.45;
+        const birdCenterY = PHONE_HEIGHT * 0.45;
         const distance = Math.sqrt(
           Math.pow(pageX - birdCenterX, 2) + Math.pow(pageY - birdCenterY, 2)
         );
@@ -1691,22 +1663,37 @@ export default function App() {
     );
   }
 
+  // Phone frame component with notch
+  const PhoneFrame = ({ children }) => (
+    <View style={styles.phoneFrame}>
+      {/* Notch */}
+      <View style={styles.notch} />
+      {/* Content area with safe zones */}
+      <View style={styles.phoneContent}>
+        {children}
+      </View>
+      {/* Bottom safe area indicator */}
+      <View style={styles.bottomSafeArea} />
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-      {appState === APP_STATES.LOGIN && renderLoginScreen()}
-      {appState === APP_STATES.NAME_INPUT && renderNameInputScreen()}
-      {appState === APP_STATES.QUIZ && renderQuizScreen()}
-      {appState === APP_STATES.PROFILE_CREATION && renderProfileCreationScreen()}
-      {appState === APP_STATES.LOADING_TRAM && renderLoadingTramScreen()}
-      {appState === APP_STATES.TRAM_GAME && renderTramGameScreen()}
-      {appState === 'home' && renderHomeScreen()}
-      {appState === 'ar_mode' && renderArScreen()}
-      {appState === 'quests' && renderQuestsScreen()}
-      {appState === 'birds_collection' && renderBirdsCollectionScreen()}
-      {appState === 'chat' && renderChatScreen()}
-      {appState === 'profile' && renderProfileScreen()}
-      {appState === 'tringa_home' && renderTringaHomeScreen()}
-      {appState === 'shop' && renderShopScreen()}
+      <PhoneFrame>
+        {appState === APP_STATES.NAME_INPUT && renderNameInputScreen()}
+        {appState === APP_STATES.QUIZ && renderQuizScreen()}
+        {appState === APP_STATES.PROFILE_CREATION && renderProfileCreationScreen()}
+        {appState === APP_STATES.LOADING_TRAM && renderLoadingTramScreen()}
+        {appState === APP_STATES.TRAM_GAME && renderTramGameScreen()}
+        {appState === 'home' && renderHomeScreen()}
+        {appState === 'ar_mode' && renderArScreen()}
+        {appState === 'quests' && renderQuestsScreen()}
+        {appState === 'birds_collection' && renderBirdsCollectionScreen()}
+        {appState === 'chat' && renderChatScreen()}
+        {appState === 'profile' && renderProfileScreen()}
+        {appState === 'tringa_home' && renderTringaHomeScreen()}
+        {appState === 'shop' && renderShopScreen()}
+      </PhoneFrame>
     </View>
   );
 }
@@ -1723,11 +1710,48 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-  mobileContainer: {
-    width: screenWidth > MOBILE_WIDTH ? MOBILE_WIDTH : screenWidth,
-    height: screenHeight > MOBILE_HEIGHT ? MOBILE_HEIGHT : screenHeight,
-    alignSelf: 'center',
+  phoneFrame: {
+    width: PHONE_WIDTH,
+    height: PHONE_HEIGHT,
     backgroundColor: '#000',
+    borderRadius: 0,
+    overflow: 'hidden',
+    position: 'relative',
+    alignSelf: 'center',
+  },
+  notch: {
+    position: 'absolute',
+    top: 0,
+    left: (PHONE_WIDTH - NOTCH_WIDTH) / 2,
+    width: NOTCH_WIDTH,
+    height: NOTCH_HEIGHT,
+    backgroundColor: '#000',
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+    zIndex: 1000,
+  },
+  phoneContent: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    paddingTop: NOTCH_HEIGHT,
+    paddingBottom: BOTTOM_SAFE_AREA,
+    overflow: 'hidden',
+  },
+  bottomSafeArea: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: BOTTOM_SAFE_AREA,
+    backgroundColor: 'transparent',
+    zIndex: 1000,
+  },
+  mobileContainer: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#000',
+    overflow: 'hidden',
   },
   bg: { 
     flex: 1,
@@ -2256,8 +2280,8 @@ const styles = StyleSheet.create({
   },
   btnConnectTram: {
     position: 'absolute',
-    left: 164/375 * MOBILE_WIDTH,
-    top: 547/812 * MOBILE_HEIGHT,
+    left: 164/375 * PHONE_WIDTH,
+    top: Math.min(547/812 * PHONE_HEIGHT, PHONE_HEIGHT - NOTCH_HEIGHT - BOTTOM_SAFE_AREA - 60),
     backgroundColor: '#118ab2',
     paddingVertical: 10,
     paddingHorizontal: 14,
@@ -2265,8 +2289,8 @@ const styles = StyleSheet.create({
   },
   btnArMode: {
     position: 'absolute',
-    left: 297/375 * MOBILE_WIDTH,
-    top: 993/812 * MOBILE_HEIGHT,
+    left: 297/375 * PHONE_WIDTH,
+    top: Math.min(993/812 * PHONE_HEIGHT, PHONE_HEIGHT - NOTCH_HEIGHT - BOTTOM_SAFE_AREA - 60),
     backgroundColor: '#118ab2',
     paddingVertical: 10,
     paddingHorizontal: 14,
@@ -2274,8 +2298,8 @@ const styles = StyleSheet.create({
   },
   btnQuests: {
     position: 'absolute',
-    left: 413/375 * MOBILE_WIDTH,
-    top: 1325/812 * MOBILE_HEIGHT,
+    left: Math.min(413/375 * PHONE_WIDTH, PHONE_WIDTH - 100),
+    top: Math.min(1325/812 * PHONE_HEIGHT, PHONE_HEIGHT - NOTCH_HEIGHT - BOTTOM_SAFE_AREA - 60),
     backgroundColor: '#118ab2',
     paddingVertical: 10,
     paddingHorizontal: 14,
@@ -2283,7 +2307,7 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     position: 'absolute',
-    bottom: 12,
+    bottom: Math.max(12, BOTTOM_SAFE_AREA + 8),
     left: 16,
     right: 16,
     height: 56,
@@ -2293,6 +2317,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 24,
+    maxHeight: PHONE_HEIGHT - NOTCH_HEIGHT - BOTTOM_SAFE_AREA - 20,
   },
   navIcon: { color: 'white', fontSize: 18 },
   navIconLarge: { 
@@ -2314,12 +2339,13 @@ const styles = StyleSheet.create({
   },
   bottomBanner: {
     position: 'absolute',
-    bottom: 72,
+    bottom: Math.max(72, BOTTOM_SAFE_AREA + 60),
     left: 16,
     right: 16,
     backgroundColor: 'rgba(0,0,0,0.3)',
     borderRadius: 12,
     padding: 10,
+    maxWidth: PHONE_WIDTH - 32,
   },
   birdPlaceholder: {
     alignSelf: 'center',
@@ -2336,9 +2362,10 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     marginTop: 0,
-    overflow: 'visible',
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
+    maxHeight: PHONE_HEIGHT - NOTCH_HEIGHT - BOTTOM_SAFE_AREA - 200,
   },
   birdCollectionImage: {
     width: '100%',
@@ -2561,7 +2588,7 @@ const styles = StyleSheet.create({
   },
   tringaBottomNav: {
     position: 'absolute',
-    bottom: 12,
+    bottom: Math.max(12, BOTTOM_SAFE_AREA + 8),
     left: 16,
     right: 16,
     backgroundColor: 'rgba(0,0,0,0.35)',
@@ -2572,6 +2599,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     gap: 8,
+    maxHeight: PHONE_HEIGHT - NOTCH_HEIGHT - BOTTOM_SAFE_AREA - 20,
   },
   tringaNavButton: {
     backgroundColor: '#118ab2',
