@@ -392,6 +392,8 @@ export default function App() {
     setAnswers([]);
     setNameInput('');
     setSelectedBird(null);
+    setTramStage('question');
+    setTramCorrect(false);
     setAppState(APP_STATES.QUIZ);
   };
 
@@ -460,9 +462,7 @@ export default function App() {
 
   const renderResultsScreen = () => (
     <View style={styles.mobileContainer}>
-      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.95 }}>
-        <View style={styles.bgBrightnessOverlay} />
-        <View style={styles.bgSaturationOverlay} />
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
           <ScrollView 
@@ -710,7 +710,7 @@ export default function App() {
                   </View>
                   <View style={styles.resultOverlay}> 
                     {tramCorrect ? (
-                      <Text style={styles.tramResultText}>You chose B, which is correct! You have saved the hurt Tringa Guttifer. The Tringa Guttifer is a rare but regular spring passage migrant in Hong Kong, which unfortunately hurt itself in Julibee Street. Thanks to your help, it is now healed and added to your collection!</Text>
+                      <Text style={styles.tramResultText}>You chose B, which is correct! You have saved the hurt Tringa Guttifer. The Tringa Guttifer is a rare but regular spring passage migrant. Thanks to your help, it is now healed and added to your collection!</Text>
                     ) : (
                       <Text style={styles.tramResultText}>
                         {isFirstQuestion 
@@ -848,9 +848,7 @@ export default function App() {
 
   const renderQuestsScreen = () => (
     <View style={styles.mobileContainer}>
-      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.95 }}>
-        <View style={styles.bgBrightnessOverlay} />
-        <View style={styles.bgSaturationOverlay} />
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
           <View style={{ flex: 1 }}>
@@ -872,9 +870,7 @@ export default function App() {
 
   const renderBirdsCollectionScreen = () => (
     <View style={styles.mobileContainer}>
-      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.95 }}>
-        <View style={styles.bgBrightnessOverlay} />
-        <View style={styles.bgSaturationOverlay} />
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
           <View style={{ flex: 1 }}>
@@ -1714,26 +1710,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0, 0, 0, 0.2)',
   },
-  bgBrightnessOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    zIndex: 1,
-    pointerEvents: 'none',
-  },
-  bgSaturationOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 100, 0, 0.02)',
-    zIndex: 1,
-    pointerEvents: 'none',
-  },
   mobileContainer: {
     width: '100%',
     height: '100%',
@@ -1975,11 +1951,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 20,
+    borderRadius: 10,
     marginBottom: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
+    shadowOpacity: 0.65,
     shadowRadius: 20,
     elevation: 10,
   },
@@ -1987,11 +1963,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderRadius: 20,
+    borderRadius: 10,
     marginBottom: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
+    shadowOpacity: 0.65,
     shadowRadius: 20,
     elevation: 10,
   },
@@ -2011,7 +1987,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#118ab2', 
     padding: 14, 
     borderRadius: 12, 
-    marginVertical: 8,
+    marginVertical: 4,
     marginHorizontal: 12,
     alignSelf: 'stretch',
     minHeight: 48,
