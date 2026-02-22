@@ -124,7 +124,6 @@ const BIRD_CHAT_DATA = {
 
 // App states
 const APP_STATES = {
-  NAME_INPUT: 'name_input',
   QUIZ: 'quiz',
   RESULTS: 'results',
   PROFILE_CREATION: 'profile_creation',
@@ -132,15 +131,15 @@ const APP_STATES = {
   TRAM_GAME: 'tram_game',
 };
 
-// 9:16 aspect ratio dimensions
+// 9:16 aspect ratio dimensions - using standard iPhone height
 const PHONE_WIDTH = 375;
-const PHONE_HEIGHT = Math.round(PHONE_WIDTH * 16 / 9); // 667px for 9:16
+const PHONE_HEIGHT = 812; // Standard iPhone height for proper 9:16 display
 const NOTCH_WIDTH = 132; // ~35mm on iPhone X-12
 const NOTCH_HEIGHT = 20; // ~5.3mm
 const BOTTOM_SAFE_AREA = 34; // Space for home indicator
 
 export default function App() {
-  const [appState, setAppState] = useState(APP_STATES.NAME_INPUT);
+  const [appState, setAppState] = useState(APP_STATES.QUIZ);
   const [userName, setUserName] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [quizIndex, setQuizIndex] = useState(0);
@@ -366,10 +365,10 @@ export default function App() {
             setAppState(APP_STATES.QUIZ);
           }
         } else {
-          setAppState(APP_STATES.NAME_INPUT);
+          setAppState(APP_STATES.QUIZ);
         }
       } else {
-        setAppState(APP_STATES.NAME_INPUT);
+        setAppState(APP_STATES.QUIZ);
       }
     } catch (error) {
       console.log('Error checking saved login:', error);
@@ -377,40 +376,21 @@ export default function App() {
   };
 
 
-  const handleNameSubmit = async () => {
-    if (nameInput.trim().length < 2) {
-      Alert.alert('Invalid Name', 'Please enter a name with at least 2 characters');
-      return;
-    }
-    
-    setUserName(nameInput.trim());
-    
-    // Save login if remember me is checked
-    if (rememberMe) {
-      try {
-        await AsyncStorage.setItem('userLogin', JSON.stringify({
-          userName: nameInput.trim(),
-          rememberMe: true
-        }));
-      } catch (error) {
-        console.log('Error saving login:', error);
-      }
-    }
-    
-    setAppState(APP_STATES.QUIZ);
-  };
 
-  const handleLogout = async () => {
+  const handleReset = async () => {
     try {
       await AsyncStorage.removeItem('userLogin');
+      await AsyncStorage.removeItem('quizDone');
+      await AsyncStorage.removeItem('selectedBird');
     } catch (error) {
-      console.log('Error removing login:', error);
+      console.log('Error resetting:', error);
     }
     setUserName('');
     setQuizIndex(0);
     setAnswers([]);
     setNameInput('');
-    setAppState(APP_STATES.NAME_INPUT);
+    setSelectedBird(null);
+    setAppState(APP_STATES.QUIZ);
   };
 
   const isQuizDone = quizIndex >= QUESTIONS.length;
@@ -438,36 +418,6 @@ export default function App() {
   };
 
 
-  const renderNameInputScreen = () => (
-    <View style={styles.mobileContainer}>
-      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.85 }}>
-        <SafeAreaView style={styles.safe}>
-          <StatusBar style="dark" />
-          <View style={styles.nameCard}>
-            <Text style={styles.appTitle}>What's your name?</Text>
-            <TextInput
-              style={styles.nameInput}
-              placeholder="Enter your name"
-              value={nameInput}
-              onChangeText={setNameInput}
-              autoFocus
-            />
-            
-            <TouchableOpacity 
-              style={[styles.checkboxContainer, rememberMe && styles.checkboxChecked]} 
-              onPress={() => setRememberMe(!rememberMe)}
-            >
-              <Text style={styles.checkboxText}>Remember me</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.continueButton} onPress={handleNameSubmit}>
-              <Text style={styles.buttonText}>Continue</Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </ImageBackground>
-    </View>
-  );
 
   const renderQuizScreen = () => {
     // If quiz is done, show results instead
@@ -482,9 +432,6 @@ export default function App() {
             <StatusBar style="dark" />
             <View style={styles.header}>
               <Text style={styles.welcomeText}>Welcome, {userName}!</Text>
-              <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-                <Text style={styles.logoutText}>Logout</Text>
-              </TouchableOpacity>
             </View>
             
             <View style={styles.quizContent}>
@@ -515,9 +462,6 @@ export default function App() {
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
           <View style={[styles.header, styles.resultsHeader]}>
-            <TouchableOpacity onPress={handleLogout} style={[styles.logoutButton, styles.logoutButtonResults]}>
-              <Text style={styles.logoutText}>Logout</Text>
-            </TouchableOpacity>
           </View>
           
           <View style={styles.resultContent}>
@@ -797,24 +741,6 @@ export default function App() {
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
           <View style={{ flex: 1 }}>
-            {/* Logout button */}
-            <TouchableOpacity onPress={async () => {
-              try {
-                await AsyncStorage.removeItem('userLogin');
-                await AsyncStorage.removeItem('quizCompleted');
-                await AsyncStorage.removeItem('selectedBird');
-              } catch (error) {
-                console.log('Error removing login:', error);
-              }
-              setUserName('');
-              setQuizIndex(0);
-              setAnswers([]);
-              setNameInput('');
-              setSelectedBird(null);
-              setAppState(APP_STATES.LOGIN);
-            }} style={styles.homeLogoutButton}>
-              <Text style={styles.logoutText}>Logout</Text>
-            </TouchableOpacity>
             <View style={{ marginTop: 120 }}>
               <Text style={styles.locationHeaderTop}>WELCOME TO</Text>
               <Text style={styles.locationHeaderSub}>Perchliner</Text>
@@ -1668,6 +1594,14 @@ export default function App() {
     <View style={styles.phoneFrame}>
       {/* Notch */}
       <View style={styles.notch} />
+      {/* Reset button - small circle in top right */}
+      <TouchableOpacity 
+        style={styles.resetButton}
+        onPress={handleReset}
+        activeOpacity={0.7}
+      >
+        <View style={styles.resetButtonCircle} />
+      </TouchableOpacity>
       {/* Content area with safe zones */}
       <View style={styles.phoneContent}>
         {children}
@@ -1680,7 +1614,6 @@ export default function App() {
   return (
     <View style={styles.container}>
       <PhoneFrame>
-        {appState === APP_STATES.NAME_INPUT && renderNameInputScreen()}
         {appState === APP_STATES.QUIZ && renderQuizScreen()}
         {appState === APP_STATES.PROFILE_CREATION && renderProfileCreationScreen()}
         {appState === APP_STATES.LOADING_TRAM && renderLoadingTramScreen()}
@@ -1735,7 +1668,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     paddingTop: NOTCH_HEIGHT,
-    paddingBottom: BOTTOM_SAFE_AREA,
+    paddingBottom: 0,
     overflow: 'hidden',
   },
   bottomSafeArea: {
@@ -1746,6 +1679,24 @@ const styles = StyleSheet.create({
     height: BOTTOM_SAFE_AREA,
     backgroundColor: 'transparent',
     zIndex: 1000,
+  },
+  resetButton: {
+    position: 'absolute',
+    top: NOTCH_HEIGHT + 8,
+    right: 16,
+    width: 32,
+    height: 32,
+    zIndex: 2000,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resetButtonCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.2)',
   },
   mobileContainer: {
     width: '100%',
@@ -2307,7 +2258,7 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     position: 'absolute',
-    bottom: Math.max(12, BOTTOM_SAFE_AREA + 8),
+    bottom: BOTTOM_SAFE_AREA + 12,
     left: 16,
     right: 16,
     height: 56,
@@ -2317,7 +2268,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 24,
-    maxHeight: PHONE_HEIGHT - NOTCH_HEIGHT - BOTTOM_SAFE_AREA - 20,
   },
   navIcon: { color: 'white', fontSize: 18 },
   navIconLarge: { 
@@ -2588,7 +2538,7 @@ const styles = StyleSheet.create({
   },
   tringaBottomNav: {
     position: 'absolute',
-    bottom: Math.max(12, BOTTOM_SAFE_AREA + 8),
+    bottom: BOTTOM_SAFE_AREA + 12,
     left: 16,
     right: 16,
     backgroundColor: 'rgba(0,0,0,0.35)',
@@ -2599,7 +2549,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     gap: 8,
-    maxHeight: PHONE_HEIGHT - NOTCH_HEIGHT - BOTTOM_SAFE_AREA - 20,
   },
   tringaNavButton: {
     backgroundColor: '#118ab2',
