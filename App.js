@@ -433,9 +433,13 @@ export default function App() {
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
             <View style={styles.quizContent}>
-              <Text style={styles.title}>What bird are you?</Text>
+              <View style={styles.titleGradient}>
+                <Text style={styles.title}>WHAT BIRD ARE YOU?</Text>
+              </View>
               <Text style={styles.progress}>{quizIndex + 1} / {QUESTIONS.length}</Text>
-              <Text style={styles.prompt}>{QUESTIONS[quizIndex].prompt}</Text>
+              <View style={styles.promptGradient}>
+                <Text style={styles.prompt}>{QUESTIONS[quizIndex].prompt}</Text>
+              </View>
               <View style={{ height: 18 }} />
               {QUESTIONS[quizIndex].options.map(o => (
                 <TouchableOpacity key={o.key} style={styles.option} onPress={() => onPickAnswer(o.key)}>
@@ -456,7 +460,7 @@ export default function App() {
 
   const renderResultsScreen = () => (
     <View style={styles.mobileContainer}>
-      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.85 }}>
+      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
           <ScrollView 
@@ -497,7 +501,7 @@ export default function App() {
     
     return (
       <View style={styles.mobileContainer}>
-        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.85 }}>
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
             <View style={styles.profileCreationContent}>
@@ -547,7 +551,7 @@ export default function App() {
   const renderLoadingTramScreen = () => {
     return (
       <View style={styles.mobileContainer}>
-        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.85 }}>
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
             <View style={styles.loadingContent}>
@@ -842,7 +846,7 @@ export default function App() {
 
   const renderQuestsScreen = () => (
     <View style={styles.mobileContainer}>
-      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.9 }}>
+      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
           <View style={{ flex: 1 }}>
@@ -864,7 +868,7 @@ export default function App() {
 
   const renderBirdsCollectionScreen = () => (
     <View style={styles.mobileContainer}>
-      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.6 }}>
+      <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
         <SafeAreaView style={styles.safe}>
           <StatusBar style="dark" />
           <View style={{ flex: 1 }}>
@@ -1512,7 +1516,7 @@ export default function App() {
     
     return (
       <View style={styles.mobileContainer}>
-        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 0.85 }}>
+        <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
             <View style={{ flex: 1 }}>
@@ -1944,6 +1948,20 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 4,
   },
+  titleGradient: {
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  promptGradient: {
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
   backButton: {
     alignSelf: 'center',
     marginTop: 8,
@@ -1957,19 +1975,27 @@ const styles = StyleSheet.create({
     fontFamily: 'CodecPro',
   },
   option: { 
-    backgroundColor: '#e6f2ff', 
+    backgroundColor: '#118ab2', 
     padding: 14, 
     borderRadius: 12, 
     marginVertical: 8,
     marginHorizontal: 12,
     alignSelf: 'stretch',
     minHeight: 48,
+    borderWidth: 2,
+    borderColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
   },
   optionText: { 
     fontSize: 14, 
-    color: '#073b4c',
+    color: 'white',
     fontFamily: 'CodecPro',
     lineHeight: 18,
+    fontWeight: '700',
   },
   birdCard: { 
     width: 240, 
