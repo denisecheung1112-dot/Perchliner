@@ -458,7 +458,6 @@ export default function App() {
     return (
       <View style={styles.mobileContainer}>
         <ImageBackground source={BG} resizeMode="cover" style={styles.bg} imageStyle={{ opacity: 1.0 }}>
-          <View style={styles.quizBlurOverlay} />
           <SafeAreaView style={styles.safe}>
             <StatusBar style="dark" />
             <View style={styles.quizContent}>
@@ -3258,17 +3257,5 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.8)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
-  },
-  quizBlurOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'transparent',
-    backdropFilter: 'blur(5px)',
-    WebkitBackdropFilter: 'blur(5px)',
-    zIndex: 0,
-    pointerEvents: 'none',
   },
 });
